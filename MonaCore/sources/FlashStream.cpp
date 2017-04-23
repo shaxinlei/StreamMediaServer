@@ -66,10 +66,10 @@ bool FlashStream::process(AMF::ContentType type,UInt32 time,PacketReader& packet
 
 		case AMF::AUDIO:
 			{	
-				Transcode::Decode menoryDecode;
+				/*Transcode::Decode menoryDecode;
 				INFO(&menoryDecode)
-				menoryDecode.decode(packet.size(), packet);
-				INFO("audio packet.size()", packet.size())
+				menoryDecode.decode(packet.size(), packet);*/
+				//INFO("audio packet.size()", packet.size())
 				audioHandler(time,packet, lostRate);    //“Ù∆µ¥¶¿Ì
 				break;
 			}

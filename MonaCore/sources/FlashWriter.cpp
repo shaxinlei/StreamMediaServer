@@ -106,7 +106,7 @@ bool FlashWriter::writeMedia(MediaType type,UInt32 time,PacketReader& packet,con
 			break;
 		case AUDIO:
 			{
-				DEBUG("audio packet.size()", packet.size())
+				//DEBUG("audio packet.size()", packet.size())
 				if (!_onAudio.empty()) {
 					AMFWriter& writer(writeAMFData(_onAudio));
 					writer.writeNumber(time);
@@ -119,7 +119,7 @@ bool FlashWriter::writeMedia(MediaType type,UInt32 time,PacketReader& packet,con
 			
 		case VIDEO:
 			{
-				DEBUG("video packet.size()", packet.size())
+				//DEBUG("video packet.size()", packet.size())
 				if (!_onVideo.empty()) {
 				AMFWriter& writer(writeAMFData(_onVideo));
 				writer.writeNumber(time);

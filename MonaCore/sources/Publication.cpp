@@ -134,7 +134,7 @@ void Publication::pushData(DataReader& reader, UInt16 ping, double lostRate) {
 		(it++)->second->pushData(reader);   // listener can be removed in this call
 		reader.reset();
 	}
-	OnData::raise(*this, reader);
+	//OnData::raise(*this, reader);
 }
 
 
@@ -160,15 +160,15 @@ void Publication::pushAudio(UInt32 time,PacketReader& packet, UInt16 ping, doubl
 
 	_new = true;
 	UInt32 pos = packet.position();
-	INFO("audio packet.size()", packet.size())
+	//INFO("audio packet.size()", packet.size())
 	UInt8 datatest = packet.read8();
-	INFO("datatest",datatest)
+	//INFO("datatest",datatest)
 	auto it = _listeners.begin();
 	while(it!=_listeners.end()) {
 		(it++)->second->pushAudio(time,packet);  // listener can be removed in this call，服务器推音频流到播放端
 		packet.reset(pos);                       //复位，发送同一个包
 	}
-	OnAudio::raise(*this, _lastTime=time, packet);
+	//OnAudio::raise(*this, _lastTime=time, packet);
 }
 
 void Publication::pushVideo(UInt32 time,PacketReader& packet, UInt16 ping, double lostRate) {

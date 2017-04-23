@@ -173,7 +173,7 @@ bool RTMPSession::buildPacket(BinaryReader& packet) {
 	//读取客户端发来的connect请求的包时，fmt=0(第一类块消息头，含有11字节)，chunk stream ID=3
 	UInt32 idWriter = headerSize & 0x3F;
 	
-	headerSize = 12 - (headerSize>>6)*4;
+	headerSize = 12 - (headerSize>>6)*4;     //计算包头的长度
 	
 	if(headerSize==0)
 		headerSize=1;
