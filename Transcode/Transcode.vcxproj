@@ -55,7 +55,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>F:\git_source_mange\MonaServer_sha\External\lib\ffmpeg</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\programing_workspace\workspace_c++\StreamMediaServer\External\lib\ffmpeg</AdditionalLibraryDirectories>
       <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;avdevice.lib;avfilter.lib;postproc.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)d.lib</OutputFile>
     </Lib>
