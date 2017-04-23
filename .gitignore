@@ -11,6 +11,7 @@ Debug
 /MonaCore/lib
 
 /MonaBase/lib
+/Transcode/lib
 
 /MonaServer/MonaServer.vcxproj.user
 
