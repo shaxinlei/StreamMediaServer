@@ -1,0 +1,9 @@
+diff a/MonaCore/sources/Server.cpp b/MonaCore/sources/Server.cpp	(rejected hunks)
+@@ -33,6 +33,7 @@
+ 
+ void ServerManager::run(Exception& ex) {
+ 	do {
++		NOTE("ServerManger::run_waithandle");
+ 		waitHandle();
+ 	} while (sleep(2000) != STOP);    //˯��2ss
+ }
