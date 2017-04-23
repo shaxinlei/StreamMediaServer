@@ -55,7 +55,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>F:\git_source_mange\MonaServer_sha\External\lib\ffmpeg</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\WorkAndStudy\programing_workspace\workspace_c++\StreamMediaServer\External\lib\ffmpeg</AdditionalLibraryDirectories>
       <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;avdevice.lib;avfilter.lib;postproc.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)d.lib</OutputFile>
     </Lib>
@@ -79,6 +79,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\Decode.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MonaBase\MonaBase.vcxproj">
+      <Project>{59bc76a9-32cf-4580-8c32-9f12ea4ba22b}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
