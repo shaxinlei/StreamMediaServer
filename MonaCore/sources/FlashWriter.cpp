@@ -43,6 +43,9 @@ AMFWriter& FlashWriter::writeMessage() {
 	return writer;
 }
 
+
+
+
 AMFWriter& FlashWriter::writeInvocation(const char* name, double callback) {
 	AMFWriter& writer = write(AMF::INVOCATION);
 	BinaryWriter& packet = writer.packet;
