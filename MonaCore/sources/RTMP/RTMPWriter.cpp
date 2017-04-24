@@ -142,7 +142,7 @@ AMFWriter& RTMPWriter::write(AMF::ContentType type,UInt32 time,const UInt8* data
 	}
 
 	if(data) {
-		packet.write(data,size);
+		packet.write(data,size);    //写body部分数据
         return AMFWriter::Null;
 	}
 	return writer;
