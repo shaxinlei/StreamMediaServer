@@ -2,6 +2,7 @@
 
 #include "Mona/PacketReader.h"
 #include "Mona/Logs.h"
+
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -27,17 +28,18 @@ namespace  Transcode
 
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
-		//AVPacket packet;				//存储压缩数据（视频对应H.264等码流数据，音频对应PCM采样数据）
-		//	AVFrame *frame;				//AVPacket存储非压缩的数据（视频对应RGB/YUV像素数据，音频对应PCM采样数据）
+		AVPacket* packet;				//存储压缩数据（视频对应H.264等码流数据，音频对应PCM采样数据）
+		AVFrame *frame;				//AVPacket存储非压缩的数据（视频对应RGB/YUV像素数据，音频对应PCM采样数据）
 		//	enum AVMediaType type;			//指明了类型，是视频，音频，还是字幕
 		//	unsigned int stream_index;
 		//	int got_frame;
 
 		//AVStream *in_stream;
-		//	AVCodecContext *dec_ctx;
+		AVCodecContext *dec_ctx;
 
 		unsigned char* inbuffer;       //输入缓冲区间
 		AVIOContext *avio_in;          //输入对应的结构体，用于输入
+		int buffer_size;
 	
 
 

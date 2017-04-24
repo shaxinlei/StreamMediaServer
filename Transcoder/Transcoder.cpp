@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 	AVIOContext *avio_in=NULL;              
 	AVIOContext *avio_out=NULL;
 	/*open input file*/
-	avio_in =avio_alloc_context(inbuffer, 32768,0,NULL,read_buffer,NULL,NULL);     //初始化输入AVIOContext结构体
+	avio_in =avio_alloc_context(inbuffer, 32768,0,NULL,read_buffer,NULL,NULL);     //初始化输入AVIOContext结构体，回调函数用来填充AVIOcontext中的数据
 	if(avio_in==NULL)
 		goto end;
 	/*open output file*/

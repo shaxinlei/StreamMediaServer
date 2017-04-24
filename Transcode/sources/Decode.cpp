@@ -8,10 +8,16 @@ namespace Transcode
 {
 	Decode::Decode()
 	{
-		av_register_all();											//注册所有编解码器，复用器和解复用器
-		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
+
 		avio_in = NULL;
 		inbuffer = NULL;
+		packet = NULL;
+		frame = NULL;
+		dec_ctx = NULL;
+
+		av_register_all();											//注册所有编解码器，复用器和解复用器
+		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
+		
 	}
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
