@@ -1,6 +1,7 @@
 
 #include "Decode.h"     
 #include <iostream>
+#include <winerror.h>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ namespace Transcode
 		packet = NULL;
 		frame = NULL;
 		dec_ctx = NULL;
-
+		piFmt = NULL;
 		av_register_all();											//注册所有编解码器，复用器和解复用器
 		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
 		
@@ -22,11 +23,13 @@ namespace Transcode
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
+		//int ret = -1;
 		if (opaque != NULL)
 		{
 			av_log(NULL,AV_LOG_INFO,"buf_size:%i\n",buf_size);
-			uint8_t *srcBuf = (uint8_t *)opaque;
-			memcpy(buf, srcBuf, buf_size);
+			//uint8_t *srcBuf = (uint8_t *)opaque;
+			memcpy(buf, opaque, buf_size);
+			opaque = NULL;
 			return buf_size;
 		}
 		return -1;
@@ -41,7 +44,7 @@ namespace Transcode
 		uint8_t *decodeBuffer = (uint8_t*)av_malloc(buf_size);
 		memcpy(decodeBuffer, packet, buf_size);
 		/*open input file*/
-
+		av_log(NULL, AV_LOG_INFO, " The buf_size received:%i\n", buf_size);
 		avio_in = avio_alloc_context(inbuffer, buf_size, 0, decodeBuffer, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return 0;
@@ -51,7 +54,11 @@ namespace Transcode
 		*AVIOContext *pb：输入数据的缓存
 		*/
 		ifmt_ctx->pb = avio_in;
-		ifmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;
+
+		// Determine the input-format:
+
+		av_probe_input_buffer(avio_in, &piFmt, "", NULL, 0, 0); 
+		ifmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;                                          //通过标志位说明采用自定义AVIOContext
 		if ((ret = avformat_open_input(&ifmt_ctx, "whatever", NULL, NULL)) < 0) {      //打开多媒体数据并且获得一些相关的信息，函数执行成功的话，其返回值大于等于0
 			av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 			return ret;

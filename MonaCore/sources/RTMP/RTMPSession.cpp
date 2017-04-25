@@ -314,13 +314,15 @@ void RTMPSession::receive(BinaryReader& packet) {
 	// unchunk (build)
  	if (!channel.pBuffer.empty()) {    //第一次进入 empty()返回true
 		channel.pBuffer->append(packet.current(), packet.available());
+		//INFO("memcpy buffer2:", channel.pBuffer->size())
 	//	INFO("channel.pBuffer->size()", channel.pBuffer->size())
 		if (channel.bodySize > channel.pBuffer->size())
 			return; // wait the next piece
 	} else if (channel.bodySize > packet.available()) {
 		channel.pBuffer->resize(packet.available(), false);
-		//INFO("memcpy buffer", packet.available())
+		
 		memcpy(channel.pBuffer->data(),packet.current(),packet.available());   //将packet中的数据拷贝到buffer中
+		//INFO("memcpy buffer1:", channel.pBuffer->size())
 		return; // wait the next piece
 	}
 

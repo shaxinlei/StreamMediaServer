@@ -42,7 +42,7 @@ private:
 	void		endBuffer(Buffer* pBuffer) const;
 	
 				
-	mutable std::multimap<UInt32,Buffer*>	_buffers;
+	mutable std::multimap<UInt32,Buffer*>	_buffers;       //multimap ∂‡÷ÿ”≥’’»›∆˜
 	mutable std::mutex						_mutex;
 	mutable Time							_lastEmptyTime;
 };

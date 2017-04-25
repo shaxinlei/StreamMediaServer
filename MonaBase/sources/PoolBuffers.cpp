@@ -40,7 +40,7 @@ void PoolBuffers::manage() {
 		_lastEmptyTime.update();
 		return;
 	}
-	if (!_lastEmptyTime.isElapsed(10000)) // 10 sec	
+	if (!_lastEmptyTime.isElapsed(10000)) // 10 sec  到达间隔时发生
 		return;
 	// remove the bigger buffer
 	auto itBigger(_buffers.end());
@@ -58,7 +58,7 @@ Buffer* PoolBuffers::beginBuffer(UInt32 size) const {
 			_lastEmptyTime.update();
 			size = 0; // not to resize
 		} else {
-			auto itBigger(size ? _buffers.lower_bound(size) : _buffers.end());
+			auto itBigger(size ? _buffers.lower_bound(size) : _buffers.end());              //lower_bound在first和end的前闭后开区间进行二分查找，返回大于或等于size的第一个元素的位置
 			if (itBigger == _buffers.end())
 				--itBigger;
 			pBuffer = itBigger->second;

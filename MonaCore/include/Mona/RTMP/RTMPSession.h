@@ -70,6 +70,7 @@ private:
 
 	FlashMainStream						_mainStream;
 	UInt32								_decrypted;
+	
 };
 
 

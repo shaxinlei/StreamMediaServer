@@ -40,6 +40,7 @@ namespace  Transcode
 		unsigned char* inbuffer;       //输入缓冲区间
 		AVIOContext *avio_in;          //输入对应的结构体，用于输入
 		int buffer_size;
+		AVInputFormat *piFmt;
 	
 
 

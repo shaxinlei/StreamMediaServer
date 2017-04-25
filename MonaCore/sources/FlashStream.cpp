@@ -19,7 +19,8 @@ This file is a part of Mona.
 
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
-
+#define VIDEO_BUFFER_SIZE     32768
+#define NEED_TRANSCODE		1
 
 using namespace std;
 
@@ -66,18 +67,13 @@ bool FlashStream::process(AMF::ContentType type,UInt32 time,PacketReader& packet
 
 		case AMF::AUDIO:
 			{	
-				Transcode::Decode menoryDecode;
-				//INFO(&menoryDecode)
-				menoryDecode.decode(packet.size(), packet.current());
 				//INFO("audio packet.size()", packet.size())
 				audioHandler(time,packet, lostRate);    //音频处理
 				break;
 			}
 		case AMF::VIDEO:
 			{
-				//menoryDecode.decode(packet.size(), packet);
-			//	INFO("video packet.size()", packet.size())
-					videoHandler(time, packet, lostRate);   //视频处理
+				videoHandler(time, packet, lostRate);   //视频处理
 				break;
 			}
 		case AMF::DATA_AMF3:
@@ -292,8 +288,35 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 		WARN("a video packet has been received on a no publishing stream ",id,", certainly a publication currently closing");
 		return;
 	}
-	_pPublication->pushVideo(time,packet,peer.ping(),lostRate);
-	//NOTE("receiveVideo");
+	if (NEED_TRANSCODE)
+	{
+		video_buffer.append(packet.current(), packet.size());              //构建视频缓冲
+		INFO("The size of Packet:", packet.size());
+		if (video_buffer.size() >= VIDEO_BUFFER_SIZE)
+		{
+
+			PacketReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
+
+			/*transcode and then push*/
+			
+			INFO("The size of VideoPacket:", videoPacket.size());
+			Transcode::Decode menoryDecode;
+			
+			menoryDecode.decode(videoPacket.size(), videoPacket.current());
+
+			/*transcode end */
+			
+
+			_pPublication->pushVideo(time, videoPacket, peer.ping(), lostRate);
+
+			video_buffer.clear();               //清理视频缓存
+		}
+	}
+	else
+	{
+		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
+	}
+	
 }
 
 

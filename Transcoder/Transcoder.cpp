@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define __STDC_CONSTANT_MACROS
-
+#define BUFFER_SIZE	418
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -10,18 +10,19 @@ extern "C"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 };
-
+int true_size = 0;
 
 FILE *fp_open;
 FILE *fp_write;
 
 //Read File   回调函数
 int read_buffer(void *opaque, uint8_t *buf, int buf_size){
-	printf("1buf_size:%d\n", buf_size);
+	printf("buf_size:%d\n", buf_size);
 	if(!feof(fp_open)){
-		int true_size=fread(buf,1,buf_size,fp_open);             //返回读取的字节数
-		printf("2buf_size:%d\n", true_size);
+		true_size=fread(buf,1,buf_size,fp_open);             //返回读取的字节数
+		printf("true_size:%d\n", true_size);
 		return true_size;
+
 	}else{
 		return -1;
 	}
@@ -29,9 +30,10 @@ int read_buffer(void *opaque, uint8_t *buf, int buf_size){
 
 //Write File  回调函数
 int write_buffer(void *opaque, uint8_t *buf, int buf_size){
+	
 	if(!feof(fp_write)){
-		int true_size=fwrite(buf,1,buf_size,fp_write);
-		return true_size;
+		int true__size=fwrite(buf,1,buf_size,fp_write);
+		return true__size;
 	}else{
 		return -1;
 	}
@@ -116,17 +118,17 @@ int main(int argc, char* argv[])
 
 	unsigned char* inbuffer=NULL;
 	unsigned char* outbuffer=NULL;
-	inbuffer=(unsigned char*)av_malloc(32768);            //为输入缓冲区间分配内存
-	outbuffer=(unsigned char*)av_malloc(32768);			//为输出缓冲区间分配内存
+	inbuffer = (unsigned char*)av_malloc(BUFFER_SIZE);            //为输入缓冲区间分配内存
+	outbuffer = (unsigned char*)av_malloc(32768);			//为输出缓冲区间分配内存
 	/*输入输出对应的结构体，用于输入输出（读写文件，RTMP协议等）*/
 	AVIOContext *avio_in=NULL;              
 	AVIOContext *avio_out=NULL;
 	/*open input file*/
-	avio_in =avio_alloc_context(inbuffer, 32768,0,NULL,read_buffer,NULL,NULL);     //初始化输入AVIOContext结构体，回调函数用来填充AVIOcontext中的数据
+	avio_in = avio_alloc_context(inbuffer, BUFFER_SIZE, 0, NULL, read_buffer, NULL, NULL);     //初始化输入AVIOContext结构体，回调函数用来填充AVIOcontext中的数据
 	if(avio_in==NULL)
 		goto end;
 	/*open output file*/
-	avio_out =avio_alloc_context(outbuffer, 32768,0,NULL,NULL,write_buffer,NULL);  //初始化输出AVIOContext结构体
+	avio_out = avio_alloc_context(outbuffer, 32768, 0, NULL, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 	if(avio_out==NULL)
 		goto end;
 

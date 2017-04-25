@@ -1,9 +1,12 @@
+
+/*
 #include "utils.h"
 #include <pthread.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 UdpQueue recvqueue;
 UdpParam udpParam;
+
 //注册av_read_frame的回调函数，这里只是最简处理，实际应用中应加上出错处理，超时等待...
 int read_data(void *opaque, uint8_t *buf, int buf_size) {
 	int size = buf_size;
@@ -132,3 +135,4 @@ int main(int argc, char** argv) {
 	free_queue(&recvqueue);
 	return 0;
 }
+*/
