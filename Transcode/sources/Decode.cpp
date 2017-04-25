@@ -22,21 +22,27 @@ namespace Transcode
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
-		uint8_t *srcBuf = (uint8_t *)opaque;
-		memcpy(buf, srcBuf, buf_size);
-		return buf_size;
+		if (opaque != NULL)
+		{
+			av_log(NULL,AV_LOG_INFO,"buf_size:%i\n",buf_size);
+			uint8_t *srcBuf = (uint8_t *)opaque;
+			memcpy(buf, srcBuf, buf_size);
+			return buf_size;
+		}
+		return -1;
 	}
 
 
-	int Decode::decode(int buf_size, Mona::PacketReader& packet)
+	int Decode::decode(int buf_size, const uint8_t *packet)
 	{
 		int ret;
 		int i = 0;
 		inbuffer = (unsigned char*)av_malloc(buf_size);            //为输入缓冲区间分配内存
-
+		uint8_t *decodeBuffer = (uint8_t*)av_malloc(buf_size);
+		memcpy(decodeBuffer, packet, buf_size);
 		/*open input file*/
 
-		avio_in = avio_alloc_context(inbuffer,buf_size,0,&packet,read_buffer,NULL,NULL);
+		avio_in = avio_alloc_context(inbuffer, buf_size, 0, decodeBuffer, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return 0;
 
