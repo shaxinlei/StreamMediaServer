@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Transcode", "Transcode\Tran
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Transcoder", "Transcoder\simplest_ffmpeg_mem_transcoder.vcxproj", "{D731E66B-33CD-4002-9358-4E012A420089}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Exercises", "Exercises\Exercises.vcxproj", "{F87885BC-16E1-4334-B64D-036DFE8327EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		debug|ARM = debug|ARM
@@ -75,6 +77,14 @@ Global
 		{D731E66B-33CD-4002-9358-4E012A420089}.release|Win32.ActiveCfg = Release|Win32
 		{D731E66B-33CD-4002-9358-4E012A420089}.release|Win32.Build.0 = Release|Win32
 		{D731E66B-33CD-4002-9358-4E012A420089}.release|x64.ActiveCfg = Release|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.debug|ARM.ActiveCfg = Debug|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.debug|Win32.ActiveCfg = Debug|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.debug|Win32.Build.0 = Debug|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.debug|x64.ActiveCfg = Debug|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.release|ARM.ActiveCfg = Release|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.release|Win32.ActiveCfg = Release|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.release|Win32.Build.0 = Release|Win32
+		{F87885BC-16E1-4334-B64D-036DFE8327EA}.release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
