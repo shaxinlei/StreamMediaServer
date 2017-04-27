@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Mona/PacketReader.h"
 #include "Mona/Logs.h"
+#include "Queue.h"
 
 extern "C"
 {
@@ -24,7 +24,7 @@ namespace  Transcode
 		//回调函数 将收到包的buffer拷贝到buf中
 		friend int read_buffer(void *opaque, uint8_t *buf, int buf_size);
 
-		int decode(int buf_size, const uint8_t *packet);
+		int decode(int size,const uint8_t *buf);
 
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）

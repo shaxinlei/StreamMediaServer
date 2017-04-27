@@ -27,6 +27,7 @@ This file is a part of Mona.
 #include "Mona/Invoker.h"
 
 #include "Decode.h"
+#include "Queue.h"
 
 namespace Mona {
 
@@ -71,6 +72,8 @@ private:
 	Listener*		_pListener;
 	UInt32			_bufferTime;
 	Buffer       video_buffer;
+	Transcode::Decode menoryDecode;
+	//Transcode::VideoQueue videoQueue;
 };
 
 

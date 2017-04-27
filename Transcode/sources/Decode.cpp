@@ -2,11 +2,13 @@
 #include "Decode.h"     
 #include <iostream>
 #include <winerror.h>
-
+#define BUF_SIZE 32768
 using namespace std;
 
 namespace Transcode
 {
+	VideoQueue videoQueue;
+
 	Decode::Decode()
 	{
 
@@ -29,16 +31,16 @@ namespace Transcode
 			av_log(NULL,AV_LOG_INFO,"buf_size:%i\n",buf_size);
 			//uint8_t *srcBuf = (uint8_t *)opaque;
 			memcpy(buf, opaque, buf_size);
-			opaque = NULL;
+			//opaque = NULL;
 			return buf_size;
 		}
 		return -1;
 	}
 
 
-	int Decode::decode(int buf_size, const uint8_t *packet)
+	int Decode::decode(int buf_size,const uint8_t *packet)
 	{
-		int ret;
+		int ret = 0;
 		int i = 0;
 		inbuffer = (unsigned char*)av_malloc(buf_size);            //为输入缓冲区间分配内存
 		uint8_t *decodeBuffer = (uint8_t*)av_malloc(buf_size);
@@ -49,15 +51,17 @@ namespace Transcode
 		if (avio_in == NULL)
 			return 0;
 
+		/*if(av_probe_input_buffer(avio_in, &piFmt, "", NULL, 0, 0) < 0)			//探测流格式
+		{
+			av_log(NULL, AV_LOG_ERROR, "probe filed!");
+		}*/
 		/*原本的输入AVFormatContext的指针pb（AVIOContext类型）
 		*指向这个自行初始化的输入AVIOContext结构体。
 		*AVIOContext *pb：输入数据的缓存
 		*/
-		ifmt_ctx->pb = avio_in;
+		
+		ifmt_ctx->pb = avio_in;     //important
 
-		// Determine the input-format:
-
-		av_probe_input_buffer(avio_in, &piFmt, "", NULL, 0, 0); 
 		ifmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;                                          //通过标志位说明采用自定义AVIOContext
 		if ((ret = avformat_open_input(&ifmt_ctx, "whatever", NULL, NULL)) < 0) {      //打开多媒体数据并且获得一些相关的信息，函数执行成功的话，其返回值大于等于0
 			av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");

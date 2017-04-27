@@ -288,6 +288,67 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 		WARN("a video packet has been received on a no publishing stream ",id,", certainly a publication currently closing");
 		return;
 	}
+	/*if (NEED_TRANSCODE)
+	{
+
+		/*uint8_t* tempVideoBuf = (uint8_t*)av_mallocz(sizeof(uint8_t)*packet.size());
+		memcpy(tempVideoBuf, packet.current(), packet.size());#1#
+		videoQueue.put_queue(packet.current(), packet.size());
+		if (videoQueue.get_overCapcityFlag())            //视频缓冲池中数据超出边界，需要推出进行转码
+		{
+			/*transcode and then push#1#
+			//INFO("The size of VideoPacket:", videoPacket.size());
+			//Transcode::Decode menoryDecode;
+
+		//	menoryDecode.decode(videoQueue.getBufSize(), videoQueue.get_videoBuf());
+			/*transcode end #1#
+			
+			PacketReader videoPacket(videoQueue.get_videoBuf(), videoQueue.getBufSize());          //构建videoPacket
+			INFO("The size of VideoPacket:", videoPacket.size());
+
+			_pPublication->pushVideo(time, videoPacket, peer.ping(), lostRate);
+
+			videoQueue.free_queue();    //释放内存
+
+		}
+	}
+	else
+	{
+		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
+	}*/
+
+	/*if (NEED_TRANSCODE)
+	{
+
+		video_buffer.append(packet.current(), packet.size());              //构建视频缓冲
+		//INFO("The size of Packet:", packet.size());
+		if (video_buffer.size() >= VIDEO_BUFFER_SIZE)
+		{
+
+			PacketReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
+
+			/*transcode and then push#1#
+			
+
+			packet.read8();
+			INFO("The size of VideoPacket:", videoPacket.size());
+			Transcode::Decode menoryDecode;
+			
+			menoryDecode.decode(videoPacket.available(), videoPacket.current());
+
+			/*transcode end #1#
+			
+
+			_pPublication->pushVideo(time, videoPacket, peer.ping(), lostRate);
+
+			video_buffer.clear();               //清理视频缓存
+		}
+	}
+	else
+	{
+		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
+	}*/
+
 	if (NEED_TRANSCODE)
 	{
 		video_buffer.append(packet.current(), packet.size());              //构建视频缓冲
@@ -298,14 +359,13 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 			PacketReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
 
 			/*transcode and then push*/
-			
+
 			INFO("The size of VideoPacket:", videoPacket.size());
-			Transcode::Decode menoryDecode;
-			
+
 			menoryDecode.decode(videoPacket.size(), videoPacket.current());
 
 			/*transcode end */
-			
+
 
 			_pPublication->pushVideo(time, videoPacket, peer.ping(), lostRate);
 

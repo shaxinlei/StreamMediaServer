@@ -18,9 +18,15 @@
     <ClInclude Include="include\Decode.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\Queue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\Decode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\Queue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
