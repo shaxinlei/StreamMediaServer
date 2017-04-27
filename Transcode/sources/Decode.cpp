@@ -29,10 +29,9 @@ namespace Transcode
 		if (opaque != NULL)
 		{
 			av_log(NULL,AV_LOG_INFO,"buf_size:%i\n",buf_size);
-			//uint8_t *srcBuf = (uint8_t *)opaque;
-			memcpy(buf, opaque, buf_size);
-			//opaque = NULL;
-			return buf_size;
+			int size = buf_size - 10;
+			memcpy(buf, opaque, size);
+			return size;
 		}
 		return -1;
 	}
@@ -42,9 +41,10 @@ namespace Transcode
 	{
 		int ret = 0;
 		int i = 0;
-		inbuffer = (unsigned char*)av_malloc(buf_size);            //为输入缓冲区间分配内存
+		inbuffer = (unsigned char*)av_malloc(2*buf_size);            //为输入缓冲区间分配内存
 		uint8_t *decodeBuffer = (uint8_t*)av_malloc(buf_size);
 		memcpy(decodeBuffer, packet, buf_size);
+		
 		/*open input file*/
 		av_log(NULL, AV_LOG_INFO, " The buf_size received:%i\n", buf_size);
 		avio_in = avio_alloc_context(inbuffer, buf_size, 0, decodeBuffer, read_buffer, NULL, NULL);
