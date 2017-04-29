@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	// Dump valid information onto standard error  
-	av_dump_format(ifmt_ctx, 0, url, false);
+	av_dump_format(ifmt_ctx, 0, NULL, false);
 
 	// Find the first audio stream  
 	audioStream = -1;
