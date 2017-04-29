@@ -7,8 +7,6 @@ using namespace std;
 
 namespace Transcode
 {
-	VideoQueue videoQueue;
-
 	Decode::Decode()
 	{
 
@@ -40,7 +38,7 @@ namespace Transcode
 	{
 		int ret = 0;
 		int i = 0;
-		inbuffer = (unsigned char*)av_malloc(2*buf_size);            //为输入缓冲区间分配内存
+		inbuffer = (unsigned char*)av_malloc(10*buf_size);            //为输入缓冲区间分配内存
 		uint8_t *decodeBuffer = (uint8_t*)av_malloc(buf_size);
 		memcpy(decodeBuffer, packet, buf_size);
 		
@@ -50,10 +48,10 @@ namespace Transcode
 		if (avio_in == NULL)
 			return 0;
 
-		/*if(av_probe_input_buffer(avio_in, &piFmt, "", NULL, 0, 0) < 0)			//探测流格式
+		if(av_probe_input_buffer(avio_in, &piFmt, "", NULL, 0, 0) < 0)			//探测流格式
 		{
 			av_log(NULL, AV_LOG_ERROR, "probe filed!");
-		}*/
+		}
 		/*原本的输入AVFormatContext的指针pb（AVIOContext类型）
 		*指向这个自行初始化的输入AVIOContext结构体。
 		*AVIOContext *pb：输入数据的缓存
