@@ -61,7 +61,7 @@ int flush_encoder(AVFormatContext *fmt_ctx,unsigned int stream_index)
 			break;
 		if (!got_frame)
 		{ret=0;break;}
-		/* prepare packet for muxing */
+	
 		enc_pkt.stream_index = stream_index;
 		enc_pkt.dts = av_rescale_q_rnd(enc_pkt.dts,
 				fmt_ctx->streams[stream_index]->codec->time_base,
@@ -109,7 +109,8 @@ int main(int argc, char* argv[])
 	/******************shart初始化输入和输出的AVFormatContext***********************/
 
 	ifmt_ctx=avformat_alloc_context();             //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-	avformat_alloc_output_context2(&ofmt_ctx, NULL, "h263", NULL);				//初始化AVFormatContext结构体
+	avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);				//初始化AVFormatContext结构体
+	
 
 	/******************初始化输入和输出的AVFormatContext  end***********************/
 
@@ -350,3 +351,4 @@ end:
 	return (ret? 1:0);
 }
 
+*/

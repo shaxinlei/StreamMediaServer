@@ -19,7 +19,8 @@ This file is a part of Mona.
 
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
-#define VIDEO_BUFFER_SIZE     32768*8
+#include "Mona/MediaCodec.h"
+#define VIDEO_BUFFER_SIZE     32768
 #define NEED_TRANSCODE		1
 
 using namespace std;
@@ -319,7 +320,23 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 
 	if (NEED_TRANSCODE)
 	{
-		video_buffer.append(packet.current(), packet.size());              //构建视频缓冲
+		char flvHeader[] = { 'F', 'L', 'V', 0x01,
+			0x01,             /* 0x04代表有音频, 0x01代表有视频 */
+			0x00, 0x00, 0x00, 0x09,
+			0x00, 0x00, 0x00, 0x00
+		};
+		 
+		char tagHeader[] = { 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+		char tagEnd[] = { 0x00, 0x00, 0x00, 0x00};
+
+		if (MediaCodec::H264::IsCodecInfos(packet)) {
+			video_buffer.append(flvHeader,13);
+		}
+		else
+		{
+			video_buffer.append(packet.current(), packet.size());              //构建视频缓冲
+		}
+		
 		INFO("The size of Packet:", packet.size());
 		if (video_buffer.size() >= VIDEO_BUFFER_SIZE)
 		{

@@ -18,7 +18,6 @@ namespace Transcode
 		piFmt = NULL;
 		av_register_all();											//注册所有编解码器，复用器和解复用器
 		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-		
 	}
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
@@ -39,7 +38,7 @@ namespace Transcode
 		int ret = 0;
 		int i = 0;
 		inbuffer = (unsigned char*)av_malloc(10*buf_size);            //为输入缓冲区间分配内存
-		uint8_t *decodeBuffer = (uint8_t*)av_malloc(buf_size);
+		uint8_t *decodeBuffer = (uint8_t*)av_malloc(buf_size);        
 		memcpy(decodeBuffer, packet, buf_size);
 		
 		/*open input file*/
@@ -48,26 +47,30 @@ namespace Transcode
 		if (avio_in == NULL)
 			return 0;
 
-		if(av_probe_input_buffer(avio_in, &piFmt, "", NULL, 0, 0) < 0)			//探测流格式
+		if(av_probe_input_buffer2(avio_in, &piFmt, "", NULL, 0, 0) < 0)			//探测流格式
 		{
 			av_log(NULL, AV_LOG_ERROR, "probe filed!");
 		}
-		/*原本的输入AVFormatContext的指针pb（AVIOContext类型）
-		*指向这个自行初始化的输入AVIOContext结构体。
-		*AVIOContext *pb：输入数据的缓存
-		*/
+
+		/*
+		 *原本的输入AVFormatContext的指针pb（AVIOContext类型）
+		 *指向这个自行初始化的输入AVIOContext结构体。
+		 */
 		
 		ifmt_ctx->pb = avio_in;     //important
 
-		ifmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;                                          //通过标志位说明采用自定义AVIOContext
-		if ((ret = avformat_open_input(&ifmt_ctx, "whatever", NULL, NULL)) < 0) {      //打开多媒体数据并且获得一些相关的信息，函数执行成功的话，其返回值大于等于0
+		ifmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;															 //通过标志位说明采用自定义AVIOContext
+		if ((ret = avformat_open_input(&ifmt_ctx, "flv", NULL, NULL)) < 0) {							//打开多媒体数据并且获得一些相关的信息，函数执行成功的话，其返回值大于等于0
 			av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 			return ret;
 		}
-		if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {					//该函数可以读取一部分视音频数据并且获得一些相关的信息
+
+		av_dump_format(ifmt_ctx, 0, NULL, false);
+		if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {										//该函数可以读取一部分视音频数据并且获得一些相关的信息
 			av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
 			return ret;
 		}
+		av_dump_format(ifmt_ctx, 0, NULL, false);
 		printf("***nb_stream%d \n", ifmt_ctx->nb_streams);
 		for (i = 0; i < ifmt_ctx->nb_streams; i++) {       //nb_streams为流的数目
 			AVStream *stream;
