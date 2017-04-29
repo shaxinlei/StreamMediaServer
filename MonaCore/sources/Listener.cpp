@@ -165,28 +165,29 @@ void Listener::pushVideo(UInt32 time,PacketReader& packet) {
 	if(!receiveVideo && !MediaCodec::H264::IsCodecInfos(packet))
 		return;
 
-	if (!_codecInfosSent) {            //初始化listener时_codecInfosSent初始化为flase
-		if (MediaCodec::IsKeyFrame(packet)) {
+	if (!_codecInfosSent) {            //初始化listener时_codecInfosSent初始化为flase，此时解码信息包未发送
+		if (MediaCodec::IsKeyFrame(packet)) {             //如果帧类型是关键帧
 			_codecInfosSent = true;
-			if (!publication.videoCodecBuffer().empty() && !MediaCodec::H264::IsCodecInfos(packet)) {
+			if (!publication.videoCodecBuffer().empty() && !MediaCodec::H264::IsCodecInfos(packet)) {         //videoCodecBuffer非空且是解码信息包
 				PacketReader videoCodecPacket(publication.videoCodecBuffer()->data(), publication.videoCodecBuffer()->size());
 				INFO("H264 codec infos sent to one listener of ", publication.name(), " publication")
-				pushVideo(time, videoCodecPacket);
+				pushVideo(time, videoCodecPacket);              //发送解码信息包
 			}
-		} else {
+		} 
+		else {                //解码信息包还未发送，但未收到关键帧，因此丢弃视频帧等待第一个关键帧
 			DEBUG("Video frame dropped to wait first key frame");
 			return;
 		}
 	}
 
-	if (!_pVideoWriter && !initWriters())
+	if (!_pVideoWriter && !initWriters())             //初始化成功则_firstTime=true
 		return;
 
 	if (_firstTime) {
 		_startTime = time;
 		_firstTime = false;
 
-		// for audio sync (audio is usually the reference track)
+		// for audio sync (audio is usually the reference track)    此处用于音视频同步
 		if (pushAudioInfos(time))
 			pushAudio(time, PacketReader::Null); // push a empty audio packet to avoid a video which waits audio tracks!
 	}

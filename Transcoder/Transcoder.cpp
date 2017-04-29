@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define __STDC_CONSTANT_MACROS
-#define BUFFER_SIZE	418
+#define BUFFER_SIZE	32768*8
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -20,7 +20,6 @@ int read_buffer(void *opaque, uint8_t *buf, int buf_size){
 	printf("buf_size:%d\n", buf_size);
 	if(!feof(fp_open)){
 		true_size=fread(buf,1,buf_size,fp_open);             //返回读取的字节数
-		printf("true_size:%d\n", true_size);
 		return true_size;
 
 	}else{
@@ -110,7 +109,7 @@ int main(int argc, char* argv[])
 	/******************shart初始化输入和输出的AVFormatContext***********************/
 
 	ifmt_ctx=avformat_alloc_context();             //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-	avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);				//初始化AVFormatContext结构体
+	avformat_alloc_output_context2(&ofmt_ctx, NULL, "h263", NULL);				//初始化AVFormatContext结构体
 
 	/******************初始化输入和输出的AVFormatContext  end***********************/
 
@@ -119,7 +118,7 @@ int main(int argc, char* argv[])
 	unsigned char* inbuffer=NULL;
 	unsigned char* outbuffer=NULL;
 	inbuffer = (unsigned char*)av_malloc(BUFFER_SIZE);            //为输入缓冲区间分配内存
-	outbuffer = (unsigned char*)av_malloc(32768);			//为输出缓冲区间分配内存
+	outbuffer = (unsigned char*)av_malloc(BUFFER_SIZE);			//为输出缓冲区间分配内存
 	/*输入输出对应的结构体，用于输入输出（读写文件，RTMP协议等）*/
 	AVIOContext *avio_in=NULL;              
 	AVIOContext *avio_out=NULL;
@@ -128,7 +127,7 @@ int main(int argc, char* argv[])
 	if(avio_in==NULL)
 		goto end;
 	/*open output file*/
-	avio_out = avio_alloc_context(outbuffer, 32768, 0, NULL, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
+	avio_out = avio_alloc_context(outbuffer, BUFFER_SIZE, 0, NULL, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 	if(avio_out==NULL)
 		goto end;
 

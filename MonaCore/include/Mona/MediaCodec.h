@@ -72,12 +72,24 @@ public:
 		}
 	}
 
-	static bool IsKeyFrame(BinaryReader& reader) { return reader.available()>0 && (*reader.current()&0xF0)==0x10; }
+	static bool IsKeyFrame(BinaryReader& reader) { return reader.available()>0 && (*reader.current()&0xF0)==0x10; }           //VideoTagHeader 0x1* 1：key frame  2: inter frame 
 	
 	class H264 : virtual Static {
 	public:
 		// To write header
-		static bool IsCodecInfos(BinaryReader& reader) { return reader.available()>1 && *reader.current() == 0x17 && reader.current()[1] == 0; }
+
+		/*
+		 *VideoTagHeader 0x17 1表示 keyframe  7表示 AVC(H.264)
+		 *reader.current()[1] == 0  
+		 *AVC sequence header 0表示 AVCDecoderConfigurationRecord 
+		 *					  1表示 One or more NALUs
+		 *					  
+		 *AVCDecoderConfigurationRecord包含着是H.264解码相关比较重要的sps和pps信息，
+		 *再给AVC解码器送数据流之前一定要把sps和pps信息送出，否则的话解码器不能正常解码。而且在解码器stop之后
+		 *再次start之前，如seek、快进快退状态切换等，都需要重新送一遍sps和pps的信息.AVCDecoderConfigurationRecord
+		 *在FLV文件中一般情况也是出现1次，也就是第一个 video tag
+		 */
+		static bool IsCodecInfos(BinaryReader& reader) { return reader.available()>1 && *reader.current() == 0x17 && reader.current()[1] == 0; }   
 
 	};
 

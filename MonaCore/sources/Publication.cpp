@@ -151,7 +151,7 @@ void Publication::pushAudio(UInt32 time,PacketReader& packet, UInt16 ping, doubl
 	_audioQOS.add(packet.available()+4,ping,lostRate); // 4 for time encoded
 
 	// save audio codec packet for future listeners
-	if (MediaCodec::AAC::IsCodecInfos(packet)) {
+	if (MediaCodec::AAC::IsCodecInfos(packet)) {            //判断收数据到的数据是否是AVCDecoderConfigurationRecord，解码配置信息
 		DEBUG("AAC codec infos received on publication ",_name)
 		// AAC codec && settings codec informations
 		_audioCodecBuffer->resize(packet.available(),false);

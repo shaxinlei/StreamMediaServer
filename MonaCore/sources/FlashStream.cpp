@@ -19,8 +19,8 @@ This file is a part of Mona.
 
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
-#define VIDEO_BUFFER_SIZE     32768
-#define NEED_TRANSCODE		1
+#define VIDEO_BUFFER_SIZE     32768*8
+#define NEED_TRANSCODE		0
 
 using namespace std;
 
@@ -342,7 +342,10 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 	}
 	else
 	{
+		INFO("video packet's size",packet.size())
+
 		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
+
 	}
 	
 }

@@ -29,9 +29,8 @@ namespace Transcode
 		if (opaque != NULL)
 		{
 			av_log(NULL,AV_LOG_INFO,"buf_size:%i\n",buf_size);
-			int size = buf_size - 10;
-			memcpy(buf, opaque, size);
-			return size;
+			memcpy(buf, opaque, buf_size);
+			return buf_size;
 		}
 		return -1;
 	}
