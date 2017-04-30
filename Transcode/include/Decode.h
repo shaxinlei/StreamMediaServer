@@ -51,7 +51,7 @@ namespace  Transcode
 		AVStream *in_stream;
 		AVCodecContext *dec_ctx, *enc_ctx;
 		AVCodec *encoder;                 //AVCodec是存储编解码器信息的结构体，enconder存储编码信息的结构体
-		Mona::Buffer outBuffer;
+		Mona::Buffer outVideoBuffer;
 	};
 
 	struct  Vbuffer{

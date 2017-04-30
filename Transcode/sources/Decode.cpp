@@ -115,11 +115,7 @@ namespace Transcode
 		if (avio_in == NULL)
 			return 0;
 
-		if(av_probe_input_buffer2(avio_in, &piFmt, "", NULL, 0, 0) < 0)			//探测流格式
-		{
-			av_log(NULL, AV_LOG_ERROR, "probe filed!");
-		}
-		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, &outBuffer, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
+		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, &outVideoBuffer, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
 			goto end;
 		/*
@@ -134,7 +130,6 @@ namespace Transcode
 			av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 			goto end;
 		}
-
 		
 		if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {										//该函数可以读取一部分视音频数据并且获得一些相关的信息
 			av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
@@ -337,7 +332,7 @@ namespace Transcode
 			av_log(NULL, AV_LOG_ERROR, "Error occurred\n");
 		
 
-		return &outBuffer;
+		return &outVideoBuffer;
 	}
 
 	void Decode::build_flv_message(char* tagHeader, char* tagEnd, int size)
