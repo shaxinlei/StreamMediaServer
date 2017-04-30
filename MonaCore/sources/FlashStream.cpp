@@ -20,7 +20,7 @@ This file is a part of Mona.
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
 #include "Mona/MediaCodec.h"
-#define VIDEO_BUFFER_SIZE     32768
+#define VIDEO_BUFFER_SIZE     32768*8
 #define NEED_TRANSCODE		1
 
 using namespace std;
@@ -320,49 +320,35 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 
 	if (NEED_TRANSCODE)
 	{
-		int size = packet.size();
-
-		char flvHeader[] = { 'F', 'L', 'V', 0x01,
+		char flvHeader[]= { 'F', 'L', 'V', 0x01,
 			0x01,             /* 0x04代表有音频, 0x01代表有视频 */
 			0x00, 0x00, 0x00, 0x09,
 			0x00, 0x00, 0x00, 0x00
 		};
-		 
-		char tagHeader[] = { 0x09, 0x00, 0x00, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+		char tagHeader[] = { 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+
 		char tagEnd[] = { 0x00, 0x00, 0x00, 0x00};
 
+		menoryDecode.build_flv_message(tagHeader, tagEnd, packet.size());
+
 		if (MediaCodec::H264::IsCodecInfos(packet)) {
-			
 			video_buffer.append(flvHeader,13);
-			
-			//video_buffer.append(tagEnd, 4);
-			video_buffer.append(tagHeader, 11);
-			video_buffer.append(packet.current(), packet.size());
-		}
-		else
-		{
-			
-			video_buffer.append(tagEnd, 4);
-			video_buffer.append(tagHeader, 11);
-			video_buffer.append(packet.current(), packet.size());              //构建视频缓冲
 		}
 
-		INFO("The size of Packet:", packet.size());
+		video_buffer.append(tagHeader, 11);
+		video_buffer.append(packet.current(), packet.size());
+		video_buffer.append(tagEnd, 4);
+
 		if (video_buffer.size() >= VIDEO_BUFFER_SIZE)
 		{
 
 			PacketReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
-
-			/*transcode and then push*/
-
 			INFO("The size of VideoPacket:", videoPacket.size());
 
-			menoryDecode.decode(videoPacket.size(), videoPacket.current());
+			Buffer *transcodedVideoBuffer =menoryDecode.decode(videoPacket);
+			PacketReader transcodedVideo(transcodedVideoBuffer->data(),transcodedVideoBuffer->size());
 
-			/*transcode end */
-
-
-			_pPublication->pushVideo(time, videoPacket, peer.ping(), lostRate);
+			_pPublication->pushVideo(time, transcodedVideo, peer.ping(), lostRate);
 
 			video_buffer.clear();               //清理视频缓存
 		}
@@ -376,6 +362,5 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 	}
 	
 }
-
 
 } // namespace Mona

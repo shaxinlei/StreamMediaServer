@@ -73,6 +73,8 @@ private:
 	UInt32			_bufferTime;
 	Buffer       video_buffer;
 	Transcode::Decode menoryDecode;
+
+	
 	//Transcode::VideoQueue videoQueue;
 };
 

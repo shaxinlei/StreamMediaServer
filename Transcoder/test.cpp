@@ -31,6 +31,8 @@ int main(int argc, char* argv[])
 		printf("Couldn't open input stream.\n");
 		return -1;
 	}
+	av_dump_format(ifmt_ctx, 0, NULL, false);
+
 	// Retrieve stream information  
 	if (av_find_stream_info(ifmt_ctx) < 0){
 		printf("Couldn't find stream information.\n");
