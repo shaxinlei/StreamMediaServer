@@ -71,6 +71,7 @@ private:
 	Publication*	_pPublication;
 	Listener*		_pListener;
 	UInt32			_bufferTime;
+	UInt32			_timeStamp;
 	Buffer       video_buffer;
 	Transcode::Decode menoryDecode;
 

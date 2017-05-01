@@ -30,7 +30,7 @@ namespace  Transcode
 		//int decode(int size,const uint8_t *buf);
 		Mona::Buffer * decode(Mona::PacketReader &videoPacket);     //½âÂë
 
-		void build_flv_message(char *tagHeader, char *tagEnd,int size);
+		void build_flv_message(char *tagHeader, char *tagEnd, int size, Mona::UInt32 &timeStamp);
 
 		int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index);
 

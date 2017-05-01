@@ -27,7 +27,7 @@ using namespace std;
 
 namespace Mona {
 
-FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0) {
+	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), _timeStamp(0){
 	DEBUG("FlashStream ",id," created")
 }
 
@@ -320,6 +320,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 
 	if (NEED_TRANSCODE)
 	{
+		_timeStamp++;
 		char flvHeader[]= { 'F', 'L', 'V', 0x01,
 			0x01,             /* 0x04代表有音频, 0x01代表有视频 */
 			0x00, 0x00, 0x00, 0x09,
@@ -329,7 +330,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 
 		char tagEnd[] = { 0x00, 0x00, 0x00, 0x00};
 
-		menoryDecode.build_flv_message(tagHeader, tagEnd, packet.size());
+		menoryDecode.build_flv_message(tagHeader, tagEnd, packet.size(),time);
 
 		if (MediaCodec::H264::IsCodecInfos(packet)) {
 			video_buffer.append(flvHeader,13);

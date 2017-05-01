@@ -39,7 +39,7 @@ namespace Transcode
 			Mona::PacketReader *videoPacket = (Mona::PacketReader *) opaque;
 			buf_size = FFMIN(buf_size, videoPacket->available());
 
-			av_log(NULL,AV_LOG_INFO,"buf_size:%i\n",buf_size);
+			av_log(NULL,AV_LOG_INFO," read buf_size:%i\n",buf_size);
 			memcpy(buf, videoPacket->current(), buf_size);
 			videoPacket->copyEnd(buf_size);
 			return buf_size;
@@ -51,6 +51,8 @@ namespace Transcode
 		if (opaque != NULL)
 		{
 			Mona::Buffer *outBuffer = (Mona::Buffer *) opaque;
+
+			av_log(NULL, AV_LOG_INFO, " write buf_size:%i\n", buf_size);
 			outBuffer->append(buf, buf_size);			
 			return buf_size;
 		}
@@ -331,11 +333,10 @@ namespace Transcode
 		if (ret < 0)
 			av_log(NULL, AV_LOG_ERROR, "Error occurred\n");
 		
-
 		return &outVideoBuffer;
 	}
 
-	void Decode::build_flv_message(char* tagHeader, char* tagEnd, int size)
+	void Decode::build_flv_message(char* tagHeader, char* tagEnd, int size, Mona::UInt32 &timeStamp)
 	{
 		int dataSize = size;			 //视频数据长度
 		int endSize = dataSize + 11;		//前一个Tag的长度
@@ -345,6 +346,12 @@ namespace Transcode
 		for (int i = 0; i < 3; i++)
 		{
 			tagHeader[3 - i] = *(p_dataSize + i);
+		}
+		
+		unsigned char * p_timeStamp = (unsigned char *)&timeStamp;
+		for (int i = 0; i < 3;i++)
+		{
+			tagHeader[6 - i] = *(p_timeStamp + i);
 		}
 
 		unsigned char * p_endSize = (unsigned char*)&endSize;

@@ -10,6 +10,9 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D731E66B-33CD-4002-9358-4E012A420089}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -80,11 +83,6 @@
       <AdditionalLibraryDirectories>lib;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="test.cpp" />
-    <ClCompile Include="Transcoder.cpp" />
-    <ClCompile Include="源.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

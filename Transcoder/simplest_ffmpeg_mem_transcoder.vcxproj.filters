@@ -2,7 +2,5 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="test.cpp" />
-    <ClCompile Include="源.cpp" />
-    <ClCompile Include="Transcoder.cpp" />
   </ItemGroup>
 </Project>

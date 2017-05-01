@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define __STDC_CONSTANT_MACROS
-#define BUFFER_SIZE	32768*8
+#define BUFFER_SIZE	32768
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
 		if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO)
 			printf("audio stream\n");
 	}
-	//av_dump_format(ifmt_ctx, 0, "whatever", 0);
+	av_dump_format(ifmt_ctx, 0, "whatever", 0);
 	//avio_out->write_packet=write_packet;
 
 	//原本的输出AVFormatContext的指针pb（AVIOContext类型）指向这个自行初始化的输出AVIOContext结构体
@@ -351,4 +351,3 @@ end:
 	return (ret? 1:0);
 }
 
-*/
