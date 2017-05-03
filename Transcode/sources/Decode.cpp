@@ -178,8 +178,10 @@ namespace Transcode
 			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-				enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
-				enc_ctx->width = dec_ctx->width;
+				enc_ctx->height = 720;        //如果是视频的话，代表宽和高
+				enc_ctx->width = 540;
+				enc_ctx->sample_aspect_ratio.num = 4;
+				enc_ctx->sample_aspect_ratio.num = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）

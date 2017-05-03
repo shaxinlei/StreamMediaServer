@@ -101,8 +101,8 @@ int main(int argc, char* argv[])
 	AVCodecContext *dec_ctx, *enc_ctx;
 	AVCodec *encoder;                 //AVCodec是存储编解码器信息的结构体，enconder存储编码信息的结构体
 
-	fp_open = fopen("cuc60anniversary_start.ts", "rb");	//打开视频源文件    文件类型 打开 二进制，只读
-	fp_write=fopen("cuc60anniversary_start.h264","wb+"); //打开输出文件     文件类型 创建 二进制，读写
+	fp_open = fopen("test.mkv", "rb");	//打开视频源文件    文件类型 打开 二进制，只读
+	fp_write=fopen("test.h264","wb+"); //打开输出文件     文件类型 创建 二进制，读写
 
 	av_register_all();					//注册所有编解码器，复用器和解复用器
 
@@ -185,9 +185,11 @@ int main(int argc, char* argv[])
 		if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 		{
 			encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-			enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
-			enc_ctx->width = dec_ctx->width;
-			enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
+			enc_ctx->height = 720;        //如果是视频的话，代表宽和高
+			enc_ctx->width = 540;
+			enc_ctx->sample_aspect_ratio.num = 4;
+			enc_ctx->sample_aspect_ratio.num = 3;
+
 			enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 			enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
 			//enc_ctx->time_base.num = 1;
