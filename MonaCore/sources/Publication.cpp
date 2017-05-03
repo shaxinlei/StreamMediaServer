@@ -161,10 +161,11 @@ void Publication::pushAudio(UInt32 time,PacketReader& packet, UInt16 ping, doubl
 	_new = true;
 	UInt32 pos = packet.position();
 	//INFO("audio packet.size()", packet.size())
-	UInt8 datatest = packet.read8();
+	
 	//INFO("datatest",datatest)
 	auto it = _listeners.begin();
 	while(it!=_listeners.end()) {
+		
 		(it++)->second->pushAudio(time,packet);  // listener can be removed in this call，服务器推音频流到播放端
 		packet.reset(pos);                       //复位，发送同一个包
 	}

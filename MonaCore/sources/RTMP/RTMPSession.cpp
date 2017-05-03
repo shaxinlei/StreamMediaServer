@@ -117,27 +117,11 @@ UInt32 RTMPSession::onData(PoolBuffer& pBuffer) {
 	const UInt8* end(pBuffer->data()+pBuffer->size());
 	while(end-data) {
 		BinaryReader packet(data, end-data);
-		///INFO("packet.current()", packet.current())
-		///INFO("packet.available()", packet.available())
-		///DEBUG("data:", data)
-		///INFO("===");
 		if (!buildPacket(packet))
 			break;
-	    //INFO("packet.current()", packet.current())
-		//INFO("packet.available()", packet.available())
 		data = packet.current()+packet.available(); // next data
-		//INFO("packet.current()", packet.current())
-		//INFO("packet.available()", packet.available())
-	//	DEBUG("data:",data)
 		receive(packet);
-		//INFO("***");
-		//INFO("packet.current()", packet.current())
-		//INFO("packet.available()", packet.available())
-		//DEBUG("data:", data)
-
 	}
-	//DEBUG(*pBuffer->data());
-	//DEBUG("flush");
 	if (data!=pBuffer->data())
 		flush();//发包
 	//DEBUG(data - pBuffer->data());
@@ -145,8 +129,7 @@ UInt32 RTMPSession::onData(PoolBuffer& pBuffer) {
 }
 
 bool RTMPSession::buildPacket(BinaryReader& packet) {
-	//INFO("In to buildpacket packet.available()", packet.available())
-	//DEBUG("Enter RTMPSession::buildPacket");
+	
 	if (pDecryptKey() && packet.available()>_decrypted) {      //是否进行加密处理
 		RC4(pDecryptKey().get(),packet.available()-_decrypted,packet.current()+_decrypted,(UInt8*)packet.current()+_decrypted);   //RC4加密算法
 		_decrypted = packet.available();

@@ -61,14 +61,11 @@ void FlashStream::disengage(FlashWriter* pWriter) {
 
 bool FlashStream::process(AMF::ContentType type,UInt32 time,PacketReader& packet,FlashWriter& writer,double lostRate) {
 
-	
-	
 	// if exception, it closes the connection, and print an ERROR message
 	switch(type) {
 
 		case AMF::AUDIO:
 			{	
-				//INFO("audio packet.size()", packet.size())
 				audioHandler(time,packet, lostRate);    //ÒôÆµ´¦Àí
 				break;
 			}
@@ -356,7 +353,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 	}
 	else
 	{
-		INFO("video packet's size",packet.size())
+		//INFO("video packet's size",packet.size())
 
 		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
 
