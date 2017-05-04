@@ -28,7 +28,7 @@ namespace Transcode
 
 		av_register_all();											//注册所有编解码器，复用器和解复用器
 		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-		avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);
+		avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", NULL);
 	}
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
@@ -225,7 +225,7 @@ namespace Transcode
 			av_log(NULL, AV_LOG_ERROR, "Error occurred when opening output file\n");
 			goto end;
 		}
-
+		init_muxer();
 		i = 0;
 		/* read all packets */
 		while (1) {
@@ -278,7 +278,7 @@ namespace Transcode
 				//该函数用于编码一帧视频数据,成功编码一个AVPacket时enc_got_frame设置为1
 				ret = avcodec_encode_video2(ofmt_ctx->streams[stream_index]->codec, &enc_pkt,
 					frame, &enc_got_frame);
-
+				
 
 				printf("Encode 1 Packet\tsize:%d\tpts:%lld\n", enc_pkt.size, enc_pkt.pts);
 
@@ -321,7 +321,7 @@ namespace Transcode
 		}
 
 		
-		av_write_trailer(ofmt_ctx);
+		av_write_trailer(ofmt_ctx);   //写文件尾
 	end:
 		av_freep(avio_in);			//释放结构体
 		av_freep(avio_out);

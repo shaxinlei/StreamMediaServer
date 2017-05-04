@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 	AVCodec *encoder;                 //AVCodec是存储编解码器信息的结构体，enconder存储编码信息的结构体
 
 	fp_open = fopen("test.mkv", "rb");	//打开视频源文件    文件类型 打开 二进制，只读
-	fp_write=fopen("test.h264","wb+"); //打开输出文件     文件类型 创建 二进制，读写
+	fp_write=fopen("test.264","wb+"); //打开输出文件     文件类型 创建 二进制，读写
 
 	av_register_all();					//注册所有编解码器，复用器和解复用器
 
@@ -226,6 +226,8 @@ int main(int argc, char* argv[])
 	}
 	//av_dump_format(ofmt_ctx, 0, "whatever", 1);
 	/* init muxer, write output file header */
+	/*avcodec_copy_context(ofmt_ctx->streams[i]->codec,
+		ifmt_ctx->streams[i]->codec);*/
 	ret = avformat_write_header(ofmt_ctx, NULL);      //写视频文件头
 	if (ret < 0) {
 		av_log(NULL, AV_LOG_ERROR, "Error occurred when opening output file\n");
