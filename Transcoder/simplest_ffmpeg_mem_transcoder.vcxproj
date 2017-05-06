@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Queue.cpp" />
     <ClCompile Include="Transcoder.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

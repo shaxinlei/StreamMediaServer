@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Decode.h">
+    <ClInclude Include="include\Queue.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\Queue.h">
+    <ClInclude Include="include\Trans_video.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Decode.cpp">
+    <ClCompile Include="sources\Queue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Queue.cpp">
+    <ClCompile Include="sources\Trans_video.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

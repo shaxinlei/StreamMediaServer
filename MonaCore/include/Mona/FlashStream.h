@@ -25,9 +25,9 @@ This file is a part of Mona.
 #include "Mona/AMFReader.h"
 #include "Mona/FlashWriter.h"
 #include "Mona/Invoker.h"
+#include "Mona/Transcode.h"
+#include <queue>
 
-#include "Decode.h"
-#include "Queue.h"
 
 namespace Mona {
 
@@ -38,7 +38,8 @@ namespace FlashEvents {
 
 class FlashStream : public virtual Object,
 	public FlashEvents::OnStart,
-	public FlashEvents::OnStop {
+	public FlashEvents::OnStop
+	{
 public:
 	FlashStream(UInt16 id, Invoker& invoker,Peer& peer);
 	virtual ~FlashStream();
@@ -54,7 +55,7 @@ public:
 	bool	process(AMF::ContentType type,UInt32 time,PacketReader& packet,FlashWriter& writer,double lostRate=0);
 
 	virtual void	flush() { if(_pPublication) _pPublication->flush(); }
-
+	std::queue<BinaryReader> video_bf_queue;
 protected:
 
 	Invoker&		invoker;
@@ -71,11 +72,10 @@ private:
 	Publication*	_pPublication;
 	Listener*		_pListener;
 	UInt32			_bufferTime;
-	UInt32			_timeStamp;
 	Buffer       video_buffer;
-	Transcode::Decode menoryDecode;
-
+	Transcode transcodeThread;
 	
+	CRITICAL_SECTION m_lock;
 	//Transcode::VideoQueue videoQueue;
 };
 

@@ -256,8 +256,8 @@ class Static {
 };
  
 class Object {
-	Object(const Object& other) = delete;
-	Object& operator=(const Object& other) = delete;
+	//Object(const Object& other) = delete;              // 声明拷贝构造函数为 deleted 函数
+	//Object& operator=(const Object& other) = delete;     // 声明拷贝赋值操作符为 deleted 函数
 	Object(Object&& other) = delete;
 	Object& operator=(Object&& other) = delete;
 public:

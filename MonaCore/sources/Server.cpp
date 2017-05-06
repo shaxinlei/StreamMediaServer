@@ -33,8 +33,6 @@ ServerManager::ServerManager(Server& server):_server(server),Task(server),Starta
 
 void ServerManager::run(Exception& ex) {
 	do {
-	//	NOTE("ServerManger::run_waithandle");
-		//NOTE("wakeUp Server Thread");
 		waitHandle();
 	} while (sleep(9000) != STOP);    //ServerÏß³ÌË¯Ãß9s
 }

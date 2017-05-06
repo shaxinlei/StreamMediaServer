@@ -338,7 +338,7 @@ namespace Mona {
 			do {
 
 				rc = ::recv(_sockfd, reinterpret_cast<char*>(buffer), length, flags);
-				//INFO("***received:", rc);
+				INFO("***received:", rc);
 			} while (rc < 0 && Net::LastError() == NET_EINTR);
 
 			if (rc < 0) {

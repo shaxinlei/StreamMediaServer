@@ -269,6 +269,7 @@
       <Filter>Protocols\RTSP</Filter>
     </ClInclude>
     <ClInclude Include="include\Mona\Decoder.h" />
+    <ClInclude Include="include\Mona\Transcode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\Protocols.cpp">
@@ -437,5 +438,6 @@
     <ClCompile Include="sources\RTSP\RTSPWriter.cpp">
       <Filter>Protocols\RTSP</Filter>
     </ClCompile>
+    <ClCompile Include="sources\Transcode.cpp" />
   </ItemGroup>
 </Project>

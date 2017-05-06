@@ -220,7 +220,7 @@ namespace Mona {
 	}
 
 	void SocketManager::handle(Exception& ex) {
-		//NOTE("Enter ScoketManger::handle");
+		NOTE("Enter ScoketManger::handle");
 		if (_eventSystem == 0) {
 			if (_ex)
 				ex = _ex;
@@ -427,6 +427,7 @@ namespace Mona {
 			if (_currentEvent == FD_READ && Socket::IOCTL(_exSkip, _sockfd, FIONREAD, 0) || _currentEvent >> 1 || _currentException) {
 				if (_currentEvent != FD_CLOSE) // in close case, it's not an error!
 					_currentError = WSAGETSELECTERROR(msg.lParam);
+				DEBUG("receve message")
 				Task::waitHandle();               
 			}
 			_currentException.set(Exception::NIL);
