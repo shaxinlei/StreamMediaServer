@@ -309,7 +309,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 		video_buffer.append(packet.current(), packet.size());							  //add video data
 		video_buffer.append(tagEnd, 4);													  //add 4byte previoustime
 
-		BinaryReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
+		BinaryReader videoPacket(video_buffer.data(), video_buffer.size());				  //构建videoPacket
 
 		EnterCriticalSection(&m_lock);
 		video_bf_queue.push(videoPacket);
