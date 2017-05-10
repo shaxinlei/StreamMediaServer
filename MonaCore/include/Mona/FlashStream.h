@@ -72,6 +72,8 @@ private:
 	Publication*	_pPublication;
 	Listener*		_pListener;
 	UInt32			_bufferTime;
+
+
 	Buffer       video_buffer;
 	Transcode transcodeThread;
 	
