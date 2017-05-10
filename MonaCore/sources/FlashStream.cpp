@@ -128,6 +128,7 @@ UInt32 FlashStream::bufferTime(UInt32 ms) {
 	//连接流上的命令
 void FlashStream::messageHandler(const string& name, AMFReader& message, FlashWriter& writer) {
 	DEBUG("Enter FlashStream::messageHandler");
+	//INFO("%%%%%", name);
 	if (name == "play") {
 		INFO("FlashString handle RTMP Commabd message play");
 		disengage(&writer);
@@ -137,7 +138,7 @@ void FlashStream::messageHandler(const string& name, AMFReader& message, FlashWr
 		// TODO implements completly NetStream.play method, with possible NetStream.play.failed too!
 		Exception ex;
 		_pListener = invoker.subscribe(ex, peer, publication, writer); // ex already log displayed
-		if (!_pListener) {              //Listener监听到为空
+		if (!_pListener) {
 			writer.writeAMFStatus("NetStream.Play.Failed", ex.error());
 			return;
 		}
