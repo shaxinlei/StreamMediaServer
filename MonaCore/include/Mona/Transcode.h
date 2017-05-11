@@ -1,8 +1,10 @@
 #pragma once
 
-
 #include "Mona/PacketReader.h"
 #include "Mona/Startable.h"
+#include "Mona/Invoker.h"
+#include <queue>
+
 
 namespace Mona {
 	class FlashStream;
@@ -26,6 +28,7 @@ namespace  Mona
 	{
 	public:
 		Transcode();
+		~Transcode();
 
 		//回调函数 将收到包的buffer拷贝到buf中
 		friend int read_buffer(void *opaque, uint8_t *buf, int buf_size);
@@ -40,6 +43,7 @@ namespace  Mona
 
 		void run(Exception& ex);
 
+		void receiveVideoPacket(BinaryReader &videoPacket);
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
 		unsigned char* inbuffer;       //输入缓冲区间
@@ -58,6 +62,9 @@ namespace  Mona
 		AVCodecContext *dec_ctx, *enc_ctx;
 		AVCodec *encoder;                 //AVCodec是存储编解码器信息的结构体，enconder存储编码信息的结构体
 		Buffer outVideoBuffer;
+
+		std::queue<BinaryReader> video_bf_queue;
+		CRITICAL_SECTION m_lock;
 	};
 
 	

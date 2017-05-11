@@ -76,6 +76,7 @@ private:
 	Transcode transcodeThread;
 	
 	CRITICAL_SECTION m_lock;
+	int running;
 	//Transcode::VideoQueue videoQueue;
 };
 

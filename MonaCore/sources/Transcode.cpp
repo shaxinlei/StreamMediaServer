@@ -1,7 +1,6 @@
 
   
 #include <iostream>
-#include <winerror.h>
 
 #include "Mona/Transcode.h"
 #include "Mona/Logs.h"
@@ -12,6 +11,7 @@ namespace Mona
 {
 	Transcode::Transcode() :Startable("Transcode")
 	{
+		InitializeCriticalSection(&m_lock);
 		avio_in = NULL;
 		avio_out = NULL;
 		inbuffer = NULL;
@@ -33,6 +33,11 @@ namespace Mona
 		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
 		avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", NULL);
 	}
+	Transcode::~Transcode()
+	{
+		DeleteCriticalSection(&m_lock);
+	}
+
 	/*
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
@@ -52,11 +57,23 @@ namespace Mona
 	*/
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
-		//BinaryReader videoTag;
-		/*if (FlashStream::video)
+		if (opaque != NULL)
 		{
-			
-		}*/
+			CRITICAL_SECTION m_lock;
+			InitializeCriticalSection(&m_lock);
+			std::queue<BinaryReader>* videoQueue = (std::queue<BinaryReader>*) opaque;
+			if (videoQueue->size() >= 1)
+			{
+				BinaryReader videoPacket = videoQueue->front();
+				buf_size = videoPacket.size();
+				memcpy(buf, videoPacket.data(), buf_size);
+				EnterCriticalSection(&m_lock);
+				videoQueue->push(videoPacket);
+				LeaveCriticalSection(&m_lock);
+				
+			}
+			DeleteCriticalSection(&m_lock);
+		}
 		return 0;
 	}
 
@@ -127,13 +144,13 @@ namespace Mona
 		inbuffer = (unsigned char*)av_malloc(BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
 
-		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, NULL, read_buffer, NULL, NULL);
+		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, &video_bf_queue, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return;
 
 		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, &outVideoBuffer, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
-			goto end;
+			goto end; 
 		/*
 		*原本的输入AVFormatContext的指针pb（AVIOContext类型）
 		*指向这个自行初始化的输入AVIOContext结构体。
@@ -607,6 +624,13 @@ namespace Mona
 		{
 			tagEnd[3 - i] = *(p_endSize + i);
 		}
+	}
+
+	void Transcode::receiveVideoPacket(BinaryReader& videoPacket)
+	{
+		EnterCriticalSection(&m_lock);
+		video_bf_queue.push(videoPacket);
+		LeaveCriticalSection(&m_lock);
 	}
 
 
