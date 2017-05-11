@@ -58,11 +58,11 @@ namespace Mona
 
 	int Transcode::startTranscodeThread()
 	{
-		thread tran_thread(std::bind(&Transcode::transcode, this));
+		transcode_thread.reset(new thread(std::bind(&Transcode::transcode, this)));
 		//thread tran_thread(&Transcode::transcode);
 
 		DEBUG("detach child thread")
-		tran_thread.detach();
+		transcode_thread->detach();
 		return 1;
 	}
 
@@ -80,6 +80,7 @@ namespace Mona
 				buf_size = videoPacket.size();
 				memcpy(buf, videoPacket.data(), buf_size);
 				EnterCriticalSection(&m_lock);
+				
 				videoQueue->pop();
 				LeaveCriticalSection(&m_lock);
 				

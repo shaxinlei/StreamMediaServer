@@ -56,7 +56,6 @@ public:
 	bool	process(AMF::ContentType type,UInt32 time,PacketReader& packet,FlashWriter& writer,double lostRate=0);
 
 	virtual void	flush() { if(_pPublication) _pPublication->flush(); }
-	std::queue<BinaryReader> video_bf_queue;
 protected:
 
 	Invoker&		invoker;
@@ -73,10 +72,9 @@ private:
 	Publication*	_pPublication;
 	Listener*		_pListener;
 	UInt32			_bufferTime;
-	Buffer       video_buffer;
+	
 	Transcode transcodeThread;
 	
-	CRITICAL_SECTION m_lock;
 	int running;
 	int queueSize;
 	//Transcode::VideoQueue videoQueue;

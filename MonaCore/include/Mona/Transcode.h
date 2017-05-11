@@ -69,6 +69,7 @@ namespace  Mona
 		Buffer outVideoBuffer;
 
 		std::queue<BinaryReader> video_bf_queue;
+		std::shared_ptr<std::thread> transcode_thread;
 		CRITICAL_SECTION m_lock;
 	};
 

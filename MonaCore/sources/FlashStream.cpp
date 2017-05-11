@@ -290,6 +290,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 	}
 	if (NEED_TRANSCODE)
 	{
+		Buffer video_buffer;
 		char flvHeader[]= { 'F', 'L', 'V', 0x01,
 			0x01,             /* 0x04代表有音频, 0x01代表有视频 */
 			0x00, 0x00, 0x00, 0x09,
@@ -308,10 +309,11 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 		video_buffer.append(tagHeader, 11);												  // add 11byte videoTag header
 		video_buffer.append(packet.current(), packet.size());							  //add video data
 		video_buffer.append(tagEnd, 4);													  //add 4byte previoustime
-
 		BinaryReader videoPacket(video_buffer.data(), video_buffer.size());				  //构建videoPacket
+
 		DEBUG("size of videopacket", videoPacket.size())
 		queueSize = transcodeThread.receiveVideoPacket(videoPacket);
+		
 		DEBUG("send videopacket to queue")
 		if (!running)
 		{
@@ -323,7 +325,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 				DEBUG("start transcode thread")
 			}
 		}
-		
+		video_buffer.clear();
 		return;
 		/*
 		if (video_buffer.size() >= VIDEO_BUFFER_SIZE)
