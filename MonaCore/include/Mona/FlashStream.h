@@ -29,6 +29,7 @@ This file is a part of Mona.
 #include <queue>
 
 
+
 namespace Mona {
 
 namespace FlashEvents {
@@ -77,6 +78,7 @@ private:
 	
 	CRITICAL_SECTION m_lock;
 	int running;
+	int queueSize;
 	//Transcode::VideoQueue videoQueue;
 };
 

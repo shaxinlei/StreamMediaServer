@@ -3,6 +3,7 @@
 #include "Mona/PacketReader.h"
 #include "Mona/Startable.h"
 #include "Mona/Invoker.h"
+#include <thread>
 #include <queue>
 
 
@@ -24,7 +25,7 @@ extern "C"
 namespace  Mona
 {
 
-	class Transcode :public Startable, public virtual Object
+	class Transcode 
 	{
 	public:
 		Transcode();
@@ -43,7 +44,11 @@ namespace  Mona
 
 		void run(Exception& ex);
 
-		void receiveVideoPacket(BinaryReader &videoPacket);
+		void transcode();
+
+		int startTranscodeThread();
+
+		int receiveVideoPacket(BinaryReader &videoPacket);
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
 		unsigned char* inbuffer;       //输入缓冲区间

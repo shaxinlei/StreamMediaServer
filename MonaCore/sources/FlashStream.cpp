@@ -27,7 +27,7 @@ using namespace std;
 
 namespace Mona {
 
-	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0),running(0){
+	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), running(0), queueSize(0){
 	
 	DEBUG("FlashStream ",id," created")
 }
@@ -310,14 +310,18 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 		video_buffer.append(tagEnd, 4);													  //add 4byte previoustime
 
 		BinaryReader videoPacket(video_buffer.data(), video_buffer.size());				  //¹¹½¨videoPacket
-		transcodeThread.receiveVideoPacket(videoPacket);
-		DEBUG(videoPacket.size())
+		DEBUG("size of videopacket", videoPacket.size())
+		queueSize = transcodeThread.receiveVideoPacket(videoPacket);
 		DEBUG("send videopacket to queue")
 		if (!running)
 		{
-			Exception exWarn;
-			running = transcodeThread.start(exWarn);
-			DEBUG("start transcode thread")
+			
+			if (queueSize >= 5)
+			{
+				Exception exWarn;
+				running = transcodeThread.startTranscodeThread();
+				DEBUG("start transcode thread")
+			}
 		}
 		
 		return;

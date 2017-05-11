@@ -9,7 +9,7 @@ using namespace std;
 
 namespace Mona
 {
-	Transcode::Transcode() :Startable("Transcode")
+	Transcode::Transcode() 
 	{
 		InitializeCriticalSection(&m_lock);
 		avio_in = NULL;
@@ -55,6 +55,18 @@ namespace Mona
 	return -1;
 	}
 	*/
+
+	int Transcode::startTranscodeThread()
+	{
+		thread tran_thread(std::bind(&Transcode::transcode, this));
+		//thread tran_thread(&Transcode::transcode);
+
+		DEBUG("detach child thread")
+		tran_thread.detach();
+		return 1;
+	}
+
+
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
 		if (opaque != NULL)
@@ -68,7 +80,7 @@ namespace Mona
 				buf_size = videoPacket.size();
 				memcpy(buf, videoPacket.data(), buf_size);
 				EnterCriticalSection(&m_lock);
-				videoQueue->push(videoPacket);
+				videoQueue->pop();
 				LeaveCriticalSection(&m_lock);
 				
 			}
@@ -89,6 +101,9 @@ namespace Mona
 		}
 		return -1;
 	}
+
+
+
 
 	int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index)
 	{
@@ -135,7 +150,8 @@ namespace Mona
 		return ret;
 	}
 
-	void Transcode::run(Mona::Exception& ex)
+
+	void Transcode::transcode()
 	{
 		int ret = 0;
 		int i = 0;
@@ -150,7 +166,7 @@ namespace Mona
 
 		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, &outVideoBuffer, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
-			goto end; 
+			goto end;
 		/*
 		*原本的输入AVFormatContext的指针pb（AVIOContext类型）
 		*指向这个自行初始化的输入AVIOContext结构体。
@@ -210,9 +226,9 @@ namespace Mona
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
 				enc_ctx->height = 720;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 540;
-				enc_ctx->sample_aspect_ratio.num = 4;
-				enc_ctx->sample_aspect_ratio.num = 3;
+				enc_ctx->width = 404;
+				enc_ctx->sample_aspect_ratio.num = 16;
+				enc_ctx->sample_aspect_ratio.num = 9;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
@@ -367,6 +383,7 @@ namespace Mona
 
 	}
 
+
 	Mona::Buffer * Transcode::decode(Mona::PacketReader &videoPacket)
 	{
 		int ret = 0;
@@ -444,7 +461,7 @@ namespace Mona
 				enc_ctx->height = 720;        //如果是视频的话，代表宽和高
 				enc_ctx->width = 540;
 				enc_ctx->sample_aspect_ratio.num = 4;
-				enc_ctx->sample_aspect_ratio.num = 3;
+				enc_ctx->sample_aspect_ratio.den = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
@@ -626,11 +643,12 @@ namespace Mona
 		}
 	}
 
-	void Transcode::receiveVideoPacket(BinaryReader& videoPacket)
+	int Transcode::receiveVideoPacket(BinaryReader& videoPacket)
 	{
 		EnterCriticalSection(&m_lock);
 		video_bf_queue.push(videoPacket);
 		LeaveCriticalSection(&m_lock);
+		return video_bf_queue.size();
 	}
 
 
