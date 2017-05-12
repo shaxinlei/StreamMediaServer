@@ -34,7 +34,7 @@ namespace  Mona
 		//回调函数 将收到包的buffer拷贝到buf中
 		friend int read_buffer(void *opaque, uint8_t *buf, int buf_size);
 		friend int write_buffer(void *opaque, uint8_t *buf, int buf_size);
-
+		friend int read_buffer1(void *opaque, uint8_t *buf, int buf_size);
 		//int decode(int size,const uint8_t *buf);
 		Buffer * decode(PacketReader &videoPacket);     //解码
 
@@ -73,6 +73,10 @@ namespace  Mona
 		std::shared_ptr<std::thread> transcode_thread;
 		CRITICAL_SECTION m_lock;
 		Publication* _publication;
+
+
+		std::mutex mut;
+		std::condition_variable data_cond;
 	};
 
 	

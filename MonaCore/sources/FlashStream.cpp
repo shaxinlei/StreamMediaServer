@@ -20,15 +20,15 @@ This file is a part of Mona.
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
 #include "Mona/MediaCodec.h"
-#define VIDEO_BUFFER_SIZE     32768*8
+#define VIDEO_BUFFER_SIZE     32768
 #define NEED_TRANSCODE		1
 
 using namespace std;
 
 namespace Mona {
 
-	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), running(0), queueSize(0){
-	
+	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), running(0), queueSize(0),flag(1){
+	video_buffer_first = new Buffer();
 	DEBUG("FlashStream ",id," created")
 }
 
@@ -291,8 +291,9 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 	if (NEED_TRANSCODE)
 	{
 		Buffer *video_buffer = new Buffer();
+
 		char flvHeader[]= { 'F', 'L', 'V', 0x01,
-			0x01,             /* 0x04代表有音频, 0x01代表有视频 */
+			0x01,             //0x04代表有音频, 0x01代表有视频 
 			0x00, 0x00, 0x00, 0x09,
 			0x00, 0x00, 0x00, 0x00
 		};
@@ -302,41 +303,45 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 
 		Transcode::build_flv_message(tagHeader, tagEnd, packet.size(),time);			  //组flv头、videoTag 
 
-		if (MediaCodec::H264::IsCodecInfos(packet)) {                                     //if AVCPacketType then add byte flv header and 4byte previoustime
-			video_buffer->append(flvHeader,13);
+		if (MediaCodec::H264::IsCodecInfos(packet)&&flag==1) {                                     //if AVCPacketType then add byte flv header and 4byte previoustime
+			video_buffer_first->append(flvHeader, 13);
+			video_buffer_first->append(tagHeader, 11);												  // add 11byte videoTag header
+			video_buffer_first->append(packet.current(), packet.size());							  //add video data
+			video_buffer_first->append(tagEnd, 4);
+			flag = 2;
 		}
-
-		video_buffer->append(tagHeader, 11);												  // add 11byte videoTag header
-		video_buffer->append(packet.current(), packet.size());							      //add video data
-		video_buffer->append(tagEnd, 4);													  //add 4byte previoustime
-		BinaryReader videoPacket(video_buffer->data(), video_buffer->size());				  //构建videoPacket
-		
-		DEBUG("size of videopacket", videoPacket.size())
-		queueSize = transcodeThread.receiveVideoPacket(videoPacket);
-		//video_buffer->clear();
-		DEBUG("send videopacket to queue")
-		if (!running)
+		else
 		{
-			Exception exWarn;
-			running = transcodeThread.start(exWarn);
-			DEBUG("start transcode thread")
-			transcodeThread.setPublication(_pPublication);
-			
+			if (flag==2)
+			{
+				video_buffer_first->append(tagHeader, 11);												  // add 11byte videoTag header
+				video_buffer_first->append(packet.current(), packet.size());							      //add video data
+				video_buffer_first->append(tagEnd, 4);
+				BinaryReader videoPacket(video_buffer_first->data(), video_buffer_first->size());
+				DEBUG("size of videopacket", videoPacket.size())
+				transcodeThread.receiveVideoPacket(videoPacket);
+				if (!running)
+				{
+					Exception exWarn;
+					running = transcodeThread.start(exWarn);
+					DEBUG("start transcode thread")
+					transcodeThread.setPublication(_pPublication);
+
+				}
+				flag=3;
+			}
+			else
+			{
+				video_buffer->append(tagHeader, 11);												  // add 11byte videoTag header
+				video_buffer->append(packet.current(), packet.size());							      //add video data
+				video_buffer->append(tagEnd, 4);													  //add 4byte previoustime
+				BinaryReader videoPacket(video_buffer->data(), video_buffer->size());				  //构建videoPacket
+
+				DEBUG("size of videopacket", videoPacket.size())
+				transcodeThread.receiveVideoPacket(videoPacket);
+				DEBUG("send videopacket to queue")
+			}
 		}
-		/*
-		if (video_buffer.size() >= VIDEO_BUFFER_SIZE)
-		{
-
-			PacketReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
-			INFO("The size of VideoPacket:", videoPacket.size());
-
-			Buffer *transcodedVideoBuffer =menoryDecode.decode(videoPacket);
-			//PacketReader transcodedVideo(transcodedVideoBuffer->data(),transcodedVideoBuffer->size());
-
-			//_pPublication->pushVideo(time, transcodedVideo, peer.ping(), lostRate);
-
-			video_buffer.clear();               //清理视频缓存
-		}*/
 	}     
 	else
 	{
@@ -347,5 +352,42 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 	}
 	
 }
+
+/*void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate)
+	{
+		if (!_pPublication) {
+			WARN("a video packet has been received on a no publishing stream ", id, ", certainly a publication currently closing");
+			return;
+		}
+		char flvHeader[] = { 'F', 'L', 'V', 0x01,
+			0x01,             // 0x04代表有音频, 0x01代表有视频 
+			0x00, 0x00, 0x00, 0x09,
+			0x00, 0x00, 0x00, 0x00
+		};
+		char tagHeader[] = { 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+
+		char tagEnd[] = { 0x00, 0x00, 0x00, 0x00 };
+
+		Transcode::build_flv_message(tagHeader, tagEnd, packet.size(), time);			  //组flv头、videoTag 
+
+		if (MediaCodec::H264::IsCodecInfos(packet)) {                                     //if AVCPacketType then add byte flv header and 4byte previoustime
+			video_buffer.append(flvHeader, 13);
+		}
+		video_buffer.append(tagHeader, 11);												  // add 11byte videoTag header
+		video_buffer.append(packet.current(), packet.size());							      //add video data
+		video_buffer.append(tagEnd, 4);
+		
+
+			PacketReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
+			INFO("The size of VideoPacket:", videoPacket.size());
+
+			Buffer *transcodedVideoBuffer = transcodeThread.decode(videoPacket);
+			//PacketReader transcodedVideo(transcodedVideoBuffer->data(),transcodedVideoBuffer->size());
+
+			//_pPublication->pushVideo(time, transcodedVideo, peer.ping(), lostRate);
+
+			video_buffer.clear();               //清理视频缓存
+	
+	}*/
 
 } // namespace Mona

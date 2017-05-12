@@ -4,7 +4,7 @@
 
 #include "Mona/Transcode.h"
 #include "Mona/Logs.h"
-#define BUF_SIZE 32768
+#define BUF_SIZE 32768*3
 using namespace std;
 
 namespace Mona
@@ -38,8 +38,8 @@ namespace Mona
 		DeleteCriticalSection(&m_lock);
 	}
 
-	/*
-	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
+	
+	int read_buffer1(void *opaque, uint8_t *buf, int buf_size)
 	{
 	//int ret = -1;
 	if (opaque != NULL)
@@ -54,7 +54,7 @@ namespace Mona
 	}
 	return -1;
 	}
-	*/
+	
 
 	/*int Transcode::startTranscodeThread()
 	{
@@ -72,16 +72,19 @@ namespace Mona
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
+		DEBUG("Enter read_buffer method")
 		if (opaque != NULL)
 		{
 			CRITICAL_SECTION m_lock;
 			InitializeCriticalSection(&m_lock);
 			std::queue<BinaryReader>* videoQueue = (std::queue<BinaryReader>*) opaque;
+			//std::unique_lock<std::mutex> lk(mut);
 			if (videoQueue->size() >= 1)
 			{
 				BinaryReader videoPacket = videoQueue->front();
 				buf_size = videoPacket.size();
 				memcpy(buf, videoPacket.data(), buf_size);
+				av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", buf_size);
 				EnterCriticalSection(&m_lock);
 				
 				videoQueue->pop();
@@ -104,9 +107,6 @@ namespace Mona
 		}
 		return -1;
 	}
-
-
-
 
 	int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index)
 	{
@@ -156,13 +156,42 @@ namespace Mona
 
 	void Transcode::run(Exception& ex)
 	{
+
 		int ret = 0;
 		int i = 0;
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
 		inbuffer = (unsigned char*)av_malloc(BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
+		//typedef int (*FUNC)(void *opaque, uint8_t *buf, int buf_size);
+		//FUNC callback = &read_buffer;
+		/*std::function <int(void *opaque, uint8_t *buf, int buf_size)> temp;
+		auto lambda = [this](void *opaque, uint8_t *buf, int buf_size)
+		{
+			DEBUG("Enter read_buffer method")
+				if (opaque != NULL)
+				{
+					CRITICAL_SECTION m_lock;
+					//InitializeCriticalSection(&m_lock);
+					std::queue<BinaryReader>* videoQueue = (std::queue<BinaryReader>*) opaque;
+					//std::unique_lock<std::mutex> lk(this->mut);
+					//data_cond.wait();
+					if (videoQueue->size() >= 1)
+					{
+						BinaryReader videoPacket = videoQueue->front();
+						buf_size = videoPacket.size();
+						memcpy(buf, videoPacket.data(), buf_size);
+						//EnterCriticalSection(&m_lock);
 
+						videoQueue->pop();
+						//LeaveCriticalSection(&m_lock);
+					}
+					//DeleteCriticalSection(&m_lock);
+				}
+			return 0;
+		};
+		temp = lambda;
+		auto p = *temp.target<int( void *opaque, uint8_t *buf, int buf_size)>();*/
 		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, &video_bf_queue, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return;
@@ -195,7 +224,7 @@ namespace Mona
 			stream = ifmt_ctx->streams[i];
 			codec_ctx = stream->codec;                    //codec为指向该视频/音频流的AVCodecContext
 			INFO("nb_stream:", i)
-				/* Reencode video & audio and remux subtitles etc. */
+				//Reencode video & audio and remux subtitles etc. */
 				if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //编解码器的类型（视频，音频）  
 					printf("video stream\n");
 					/* Open decoder */
@@ -396,7 +425,7 @@ namespace Mona
 		inbuffer = (unsigned char*)av_malloc(BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
 
-		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, &videoPacket, read_buffer, NULL, NULL);
+		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, &videoPacket, read_buffer1, NULL, NULL);
 		if (avio_in == NULL)
 			return 0;
 
@@ -428,10 +457,10 @@ namespace Mona
 			stream = ifmt_ctx->streams[i];
 			codec_ctx = stream->codec;                    //codec为指向该视频/音频流的AVCodecContext
 			INFO("nb_stream:", i)
-				/* Reencode video & audio and remux subtitles etc. */
+				/* Reencode video & audio and remux subtitles etc.*/
 				if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //编解码器的类型（视频，音频）  
 					printf("video stream\n");
-					/* Open decoder */
+					//Open decoder 
 					ret = avcodec_open2(codec_ctx,						//该函数用于初始化一个视音频编解码器的AVCodecContext
 						avcodec_find_decoder(codec_ctx->codec_id), NULL);    //根据解码器的ID查找解码器，找到就返回查找到的解码器
 					if (ret < 0) {
@@ -490,7 +519,7 @@ namespace Mona
 				goto end;
 			}
 			else {
-				/* if this stream must be remuxed */
+				// if this stream must be remuxed
 				ret = avcodec_copy_context(ofmt_ctx->streams[i]->codec,
 					ifmt_ctx->streams[i]->codec);
 				if (ret < 0) {
@@ -502,14 +531,14 @@ namespace Mona
 				enc_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 		}
 		//av_dump_format(ofmt_ctx, 0, "whatever", 1);
-		/* init muxer, write output file header */
+		//init muxer, write output file header 
 		ret = avformat_write_header(ofmt_ctx, NULL);      //写视频文件头
 		if (ret < 0) {
 			av_log(NULL, AV_LOG_ERROR, "Error occurred when opening output file\n");
 			goto end;
 		}
 		i = 0;
-		/* read all packets */
+		//read all packets */
 		while (1) {
 			i++;
 			/*读取码流中的音频若干帧或者视频一帧,例如，解码视频的时候，
@@ -576,7 +605,7 @@ namespace Mona
 					continue;
 				}
 
-				/* prepare packet for muxing */
+				// prepare packet for muxing */
 				enc_pkt.stream_index = stream_index;
 				enc_pkt.dts = av_rescale_q_rnd(enc_pkt.dts,
 					ofmt_ctx->streams[stream_index]->codec->time_base,
@@ -590,7 +619,7 @@ namespace Mona
 					ofmt_ctx->streams[stream_index]->codec->time_base,
 					ofmt_ctx->streams[stream_index]->time_base);
 				av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n", i);
-				/* mux encoded frame */
+				//mux encoded frame */
 				av_write_frame(ofmt_ctx, &enc_pkt);                          //av_write_frame()用于输出一帧视音频数据
 				if (ret < 0)
 					goto end;
@@ -648,9 +677,11 @@ namespace Mona
 
 	int Transcode::receiveVideoPacket(BinaryReader& videoPacket)
 	{
-		EnterCriticalSection(&m_lock);
+		std::lock_guard<std::mutex> lk(mut);
+		//EnterCriticalSection(&m_lock);
 		video_bf_queue.push(videoPacket);
-		LeaveCriticalSection(&m_lock);
+		data_cond.notify_one();
+		//LeaveCriticalSection(&m_lock);
 		return video_bf_queue.size();
 	}
 
