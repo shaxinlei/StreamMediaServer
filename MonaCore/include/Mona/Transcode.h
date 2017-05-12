@@ -25,7 +25,7 @@ extern "C"
 namespace  Mona
 {
 
-	class Transcode 
+	class Transcode :public Startable
 	{
 	public:
 		Transcode();
@@ -42,13 +42,14 @@ namespace  Mona
 
 		int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index);
 
-		void run(Exception& ex);
+		void run(Exception &ex);
 
-		void transcode();
+		//void transcode();
 
-		int startTranscodeThread();
+		int startTranscodeThread();        //启动转码线程
 
-		int receiveVideoPacket(BinaryReader &videoPacket);
+		int receiveVideoPacket(BinaryReader &videoPacket);    //从flashstream中接收组装结束的视频包
+		void setPublication(Publication* publication);
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
 		unsigned char* inbuffer;       //输入缓冲区间
@@ -71,6 +72,7 @@ namespace  Mona
 		std::queue<BinaryReader> video_bf_queue;
 		std::shared_ptr<std::thread> transcode_thread;
 		CRITICAL_SECTION m_lock;
+		Publication* _publication;
 	};
 
 	

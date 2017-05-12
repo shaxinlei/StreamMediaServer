@@ -41,7 +41,7 @@ void Buffer::clip(UInt32 offset) {
 }
 
 
-bool Buffer::resize(UInt32 size,bool preserveData) {     //收缩缓冲区
+bool Buffer::resize(UInt32 size,bool preserveData) {     //重新分配缓冲区大小
 	if (size <= _capacity) {
 		if (_offset && !preserveData) {
 			// fix possible clip
@@ -49,6 +49,7 @@ bool Buffer::resize(UInt32 size,bool preserveData) {     //收缩缓冲区
 			_data -= _offset;
 			_offset = 0;
 		}
+
 		_size = size;
 		return true;
 	}

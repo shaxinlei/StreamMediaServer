@@ -9,7 +9,7 @@ using namespace std;
 
 namespace Mona
 {
-	Transcode::Transcode() 
+	Transcode::Transcode() :Startable("Transcode"),_publication(NULL)
 	{
 		InitializeCriticalSection(&m_lock);
 		avio_in = NULL;
@@ -56,14 +56,17 @@ namespace Mona
 	}
 	*/
 
-	int Transcode::startTranscodeThread()
+	/*int Transcode::startTranscodeThread()
 	{
 		transcode_thread.reset(new thread(std::bind(&Transcode::transcode, this)));
-		//thread tran_thread(&Transcode::transcode);
-
 		DEBUG("detach child thread")
 		transcode_thread->detach();
 		return 1;
+	}*/
+
+	void Transcode::setPublication(Publication* publication)
+	{
+		_publication = publication;
 	}
 
 
@@ -83,7 +86,6 @@ namespace Mona
 				
 				videoQueue->pop();
 				LeaveCriticalSection(&m_lock);
-				
 			}
 			DeleteCriticalSection(&m_lock);
 		}
@@ -152,7 +154,7 @@ namespace Mona
 	}
 
 
-	void Transcode::transcode()
+	void Transcode::run(Exception& ex)
 	{
 		int ret = 0;
 		int i = 0;
