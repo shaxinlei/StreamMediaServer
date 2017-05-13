@@ -51,7 +51,7 @@ public:
 	UInt32			read32();
 	UInt64			read64();
 	bool			readBool() { return _current==_end ? false : ((*_current++) != 0); }
-	void			copyEnd(int size){ _current += size; }
+	void			moveCurrent(int size) { _current += size; }
 	template<typename NumberType>
 	NumberType		readNumber() {
 		NumberType value;

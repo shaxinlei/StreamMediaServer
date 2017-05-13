@@ -3,6 +3,7 @@
 #include "Mona/PacketReader.h"
 #include "Mona/Startable.h"
 #include "Mona/Invoker.h"
+#include "VideoBuffer.h"
 #include <thread>
 #include <queue>
 
@@ -48,7 +49,10 @@ namespace  Mona
 
 		int startTranscodeThread();        //启动转码线程
 
-		int receiveVideoPacket(BinaryReader &videoPacket);    //从flashstream中接收组装结束的视频包
+		int pushVideoPacket(BinaryReader &videoPacket);    //向视频队列压入视频包
+
+		int getVideoPacket(int& flag,uint8_t *buf, int& buf_size);
+
 		void setPublication(Publication* publication);
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
@@ -71,12 +75,10 @@ namespace  Mona
 
 		std::queue<BinaryReader> video_bf_queue;
 		std::shared_ptr<std::thread> transcode_thread;
-		CRITICAL_SECTION m_lock;
 		Publication* _publication;
 
-
-		std::mutex mut;
-		std::condition_variable data_cond;
+		VideoBuffer videoQueue;
+		int flag;
 	};
 
 	

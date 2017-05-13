@@ -319,7 +319,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 				video_buffer_first->append(tagEnd, 4);
 				BinaryReader videoPacket(video_buffer_first->data(), video_buffer_first->size());
 				DEBUG("size of videopacket", videoPacket.size())
-				transcodeThread.receiveVideoPacket(videoPacket);
+					transcodeThread.pushVideoPacket(videoPacket);
 				if (!running)
 				{
 					Exception exWarn;
@@ -338,7 +338,7 @@ void FlashStream::videoHandler(UInt32 time,PacketReader& packet, double lostRate
 				BinaryReader videoPacket(video_buffer->data(), video_buffer->size());				  //¹¹½¨videoPacket
 
 				DEBUG("size of videopacket", videoPacket.size())
-				transcodeThread.receiveVideoPacket(videoPacket);
+					transcodeThread.pushVideoPacket(videoPacket);
 				DEBUG("send videopacket to queue")
 			}
 		}

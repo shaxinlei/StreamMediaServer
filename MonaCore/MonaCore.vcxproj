@@ -291,6 +291,7 @@
     <ClInclude Include="include\Mona\FlashWriter.h" />
     <ClInclude Include="include\Mona\XMLRPCReader.h" />
     <ClInclude Include="include\Mona\XMLRPCWriter.h" />
+    <ClInclude Include="include\VideoBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\FlashMainStream.cpp" />
@@ -317,6 +318,7 @@
     <ClCompile Include="sources\SDP.cpp" />
     <ClCompile Include="sources\Server.cpp" />
     <ClCompile Include="sources\Transcode.cpp" />
+    <ClCompile Include="sources\VideoBuffer.cpp" />
     <ClCompile Include="sources\WebSocket\WSDecoder.cpp" />
     <ClCompile Include="sources\Writer.cpp" />
     <ClCompile Include="sources\Protocols.cpp" />

@@ -9,9 +9,8 @@ using namespace std;
 
 namespace Mona
 {
-	Transcode::Transcode() :Startable("Transcode"),_publication(NULL)
+	Transcode::Transcode() :Startable("Transcode"), _publication(NULL), flag(0)
 	{
-		InitializeCriticalSection(&m_lock);
 		avio_in = NULL;
 		avio_out = NULL;
 		inbuffer = NULL;
@@ -35,7 +34,7 @@ namespace Mona
 	}
 	Transcode::~Transcode()
 	{
-		DeleteCriticalSection(&m_lock);
+
 	}
 
 	
@@ -49,7 +48,7 @@ namespace Mona
 
 	av_log(NULL,AV_LOG_INFO," read buf_size:%i\n",buf_size);
 	memcpy(buf, videoPacket->current(), buf_size);
-	videoPacket->copyEnd(buf_size);
+	videoPacket->moveCurrent(buf_size);
 	return buf_size;
 	}
 	return -1;
@@ -73,26 +72,14 @@ namespace Mona
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
 		DEBUG("Enter read_buffer method")
-		if (opaque != NULL)
+		int flag = ((Transcode *)opaque)->flag;
+		int ret = 1;
+		if (ret && !((Transcode *)opaque)->videoQueue.empty())
 		{
-			CRITICAL_SECTION m_lock;
-			InitializeCriticalSection(&m_lock);
-			std::queue<BinaryReader>* videoQueue = (std::queue<BinaryReader>*) opaque;
-			//std::unique_lock<std::mutex> lk(mut);
-			if (videoQueue->size() >= 1)
-			{
-				BinaryReader videoPacket = videoQueue->front();
-				buf_size = videoPacket.size();
-				memcpy(buf, videoPacket.data(), buf_size);
-				av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", buf_size);
-				EnterCriticalSection(&m_lock);
-				
-				videoQueue->pop();
-				LeaveCriticalSection(&m_lock);
-			}
-			DeleteCriticalSection(&m_lock);
+			ret = ((Transcode *)opaque)->getVideoPacket(flag, buf, buf_size);
+			return buf_size;
 		}
-		return 0;
+		return -1;
 	}
 
 
@@ -192,7 +179,7 @@ namespace Mona
 		};
 		temp = lambda;
 		auto p = *temp.target<int( void *opaque, uint8_t *buf, int buf_size)>();*/
-		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, &video_bf_queue, read_buffer, NULL, NULL);
+		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, this, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return;
 
@@ -675,15 +662,36 @@ namespace Mona
 		}
 	}
 
-	int Transcode::receiveVideoPacket(BinaryReader& videoPacket)
+	int Transcode::pushVideoPacket(BinaryReader& videoPacket)
 	{
-		std::lock_guard<std::mutex> lk(mut);
-		//EnterCriticalSection(&m_lock);
-		video_bf_queue.push(videoPacket);
-		data_cond.notify_one();
-		//LeaveCriticalSection(&m_lock);
-		return video_bf_queue.size();
+		if ((&videoPacket) != NULL)
+		{
+			videoQueue.push(videoPacket);
+			return 1;
+		}
+		else
+		{
+			ERROR("videoPacket is point to NULL")
+			return 0;
+		}
+		
 	}
 
+	int Transcode::getVideoPacket(int& flag,uint8_t* buf, int& buf_size)
+	{
+		if (!videoQueue.empty())
+		{
+			BinaryReader videoPacket = videoQueue.front();
+			buf_size = FFMIN(buf_size,videoPacket.available());
+			memcpy(buf, videoPacket.current(), buf_size);
+			videoPacket.moveCurrent(buf_size);
+
+			return 1;
+		} else
+		{
+			INFO("videoQueue is empty")
+			return 0;
+		}
+	}
 
 }  //namespace FFMPEG
