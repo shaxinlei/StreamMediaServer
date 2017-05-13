@@ -681,6 +681,7 @@ namespace Mona
 	{
 		if (!videoQueue.empty())
 		{
+			
 			BinaryReader videoPacket = videoQueue.front();
 			buf_size = FFMIN(buf_size,videoPacket.available());
 			memcpy(buf, videoPacket.current(), buf_size);

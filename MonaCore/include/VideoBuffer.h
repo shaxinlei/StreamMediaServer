@@ -9,6 +9,8 @@ namespace Mona
 	class VideoBuffer
 	{
 	public:
+		VideoBuffer();
+
 		BinaryReader& front();             //返回队列首元素
 
 		void push(BinaryReader& videoPacket);     //在队列尾部添加元素
@@ -19,6 +21,8 @@ namespace Mona
 
 		bool empty();						//判断队列是否为空
 
+		int getBufferSize();				//队列中视频数据的大小
+
 	private:
 		std::queue<BinaryReader> videoQueue;
 
@@ -26,6 +30,7 @@ namespace Mona
 
 		std::condition_variable data_cond;
 
+		int bufferSize;
 
 	};
 }

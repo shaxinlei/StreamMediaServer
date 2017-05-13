@@ -1,6 +1,13 @@
 #include "VideoBuffer.h"
 namespace Mona
 {
+
+	VideoBuffer::VideoBuffer()
+	{
+		bufferSize = 0;
+	}
+
+
 	BinaryReader& VideoBuffer::front()
 	{
 		std::unique_lock<std::mutex> lk(mut);
@@ -16,6 +23,7 @@ namespace Mona
 	{
 		std::lock_guard<std::mutex> lk(mut);
 		videoQueue.push(videoPacket);
+		bufferSize += videoPacket.size();
 		data_cond.notify_one();
 	}
 
@@ -26,18 +34,24 @@ namespace Mona
 		{
 			return !videoQueue.empty();
 		});
+		bufferSize -= videoQueue.back().size();
 		videoQueue.pop();
 		lk.unlock();
 	}
 
 	int VideoBuffer::size()
 	{
-		videoQueue.size();
+		return videoQueue.size();
 	}
 
 
 	bool VideoBuffer::empty()
 	{
 		return videoQueue.empty();
+	}
+
+	int VideoBuffer::getBufferSize()
+	{
+		return bufferSize;
 	}
 }
