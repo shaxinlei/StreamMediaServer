@@ -220,7 +220,7 @@ namespace Mona {
 	}
 
 	void SocketManager::handle(Exception& ex) {
-		NOTE("Enter ScoketManger::handle");
+		//NOTE("Enter ScoketManger::handle");
 		if (_eventSystem == 0) {
 			if (_ex)
 				ex = _ex;

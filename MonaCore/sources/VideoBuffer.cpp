@@ -5,6 +5,7 @@ namespace Mona
 	VideoBuffer::VideoBuffer()
 	{
 		bufferSize = 0;
+		MAX_SIZE = 10;
 	}
 
 
@@ -16,12 +17,15 @@ namespace Mona
 			return !videoQueue.empty();
 		});
 		return videoQueue.front();
-		lk.unlock();
 	}
 
 	void VideoBuffer::push(Mona::BinaryReader& videoPacket)
 	{
-		std::lock_guard<std::mutex> lk(mut);
+		//std::lock_guard<std::mutex> lk(mut);
+		std::unique_lock<std::mutex> lk(mut);
+		data_cond.wait(lk,[&]{
+			return !full();
+		});
 		videoQueue.push(videoPacket);
 		bufferSize += videoPacket.size();
 		data_cond.notify_one();
@@ -36,6 +40,7 @@ namespace Mona
 		});
 		bufferSize -= videoQueue.back().size();
 		videoQueue.pop();
+		data_cond.notify_one();
 		lk.unlock();
 	}
 
@@ -49,6 +54,12 @@ namespace Mona
 	{
 		return videoQueue.empty();
 	}
+
+	bool VideoBuffer::full()
+	{
+		return (size() >= MAX_SIZE) ? true : false;
+	}
+
 
 	int VideoBuffer::getBufferSize()
 	{

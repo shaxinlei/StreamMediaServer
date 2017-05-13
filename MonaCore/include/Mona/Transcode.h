@@ -79,6 +79,8 @@ namespace  Mona
 
 		VideoBuffer videoQueue;
 		int flag;
+
+		FILE *fp_write;
 	};
 
 	

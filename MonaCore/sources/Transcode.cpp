@@ -4,7 +4,7 @@
 
 #include "Mona/Transcode.h"
 #include "Mona/Logs.h"
-#define BUF_SIZE 32768*3
+#define BUF_SIZE 32768
 using namespace std;
 
 namespace Mona
@@ -28,14 +28,13 @@ namespace Mona
 		enc_ctx = NULL;
 		encoder = NULL;
 
+		fopen_s(&fp_write,"test.flv", "wb+"); //打开输出文件     文件类型 创建 二进制，读写
+
 		av_register_all();											//注册所有编解码器，复用器和解复用器
 		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
 		avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", NULL);
 	}
-	Transcode::~Transcode()
-	{
-
-	}
+	Transcode::~Transcode(){}
 
 	
 	int read_buffer1(void *opaque, uint8_t *buf, int buf_size)
@@ -77,13 +76,13 @@ namespace Mona
 		if (ret && !((Transcode *)opaque)->videoQueue.empty())
 		{
 			ret = ((Transcode *)opaque)->getVideoPacket(flag, buf, buf_size);
-			return buf_size;
+			return ret;
 		}
 		return -1;
 	}
 
 
-	int write_buffer(void *opaque, uint8_t *buf, int buf_size){
+	/*int write_buffer(void *opaque, uint8_t *buf, int buf_size){
 		if (opaque != NULL)
 		{
 			Mona::Buffer *outBuffer = (Mona::Buffer *) opaque;
@@ -93,9 +92,86 @@ namespace Mona
 			return buf_size;
 		}
 		return -1;
+	}*/
+
+	//Write File  回调函数
+	int write_buffer(void *opaque, uint8_t *buf, int buf_size){
+		FILE* fp_write = (FILE*)opaque;
+		if (!feof(fp_write)){
+			int true__size = fwrite(buf, 1, buf_size, fp_write);
+			INFO("write data to buf:",true__size)
+			return true__size;
+		}
+		else{
+			return -1;
+		}
 	}
 
-	int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index)
+	void Transcode::build_flv_message(char* tagHeader, char* tagEnd, int size, Mona::UInt32 &timeStamp)
+	{
+		int dataSize = size;			 //视频数据长度
+		int endSize = dataSize + 11;		//前一个Tag的长度
+
+		unsigned char * p_dataSize = (unsigned char*)&dataSize;
+
+		for (int i = 0; i < 3; i++)
+		{
+			tagHeader[3 - i] = *(p_dataSize + i);
+		}
+
+		unsigned char * p_timeStamp = (unsigned char *)&timeStamp;
+		for (int i = 0; i < 3; i++)
+		{
+			tagHeader[6 - i] = *(p_timeStamp + i);
+		}
+
+		unsigned char * p_endSize = (unsigned char*)&endSize;
+
+		for (int i = 0; i < 4; i++)
+		{
+			tagEnd[3 - i] = *(p_endSize + i);
+		}
+	}
+
+	int Transcode::pushVideoPacket(BinaryReader& videoPacket)
+	{
+		if ((&videoPacket) != NULL)
+		{
+			videoQueue.push(videoPacket);
+			return 1;
+		}
+		else
+		{
+			ERROR("videoPacket is point to NULL")
+				return 0;
+		}
+
+	}
+
+	int Transcode::getVideoPacket(int& flag, uint8_t* buf, int& buf_size)
+	{
+		if (!videoQueue.empty())
+		{
+			BinaryReader videoPacket = videoQueue.front();
+
+			buf_size = FFMIN(buf_size, videoPacket.available());
+			memcpy(buf, videoPacket.current(), buf_size);
+			videoPacket.moveCurrent(buf_size);
+			if (videoPacket.available() == 0)
+			{
+				videoQueue.pop();
+			}
+			INFO("read_buffer size:", buf_size)
+				return buf_size;
+		}
+		else
+		{
+			INFO("videoQueue is empty")
+				return 0;
+		}
+	}
+
+	int Transcode::flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index)
 	{
 		int ret;
 		int got_frame;
@@ -143,47 +219,18 @@ namespace Mona
 
 	void Transcode::run(Exception& ex)
 	{
-
+		
 		int ret = 0;
 		int i = 0;
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
 		inbuffer = (unsigned char*)av_malloc(BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
-		//typedef int (*FUNC)(void *opaque, uint8_t *buf, int buf_size);
-		//FUNC callback = &read_buffer;
-		/*std::function <int(void *opaque, uint8_t *buf, int buf_size)> temp;
-		auto lambda = [this](void *opaque, uint8_t *buf, int buf_size)
-		{
-			DEBUG("Enter read_buffer method")
-				if (opaque != NULL)
-				{
-					CRITICAL_SECTION m_lock;
-					//InitializeCriticalSection(&m_lock);
-					std::queue<BinaryReader>* videoQueue = (std::queue<BinaryReader>*) opaque;
-					//std::unique_lock<std::mutex> lk(this->mut);
-					//data_cond.wait();
-					if (videoQueue->size() >= 1)
-					{
-						BinaryReader videoPacket = videoQueue->front();
-						buf_size = videoPacket.size();
-						memcpy(buf, videoPacket.data(), buf_size);
-						//EnterCriticalSection(&m_lock);
-
-						videoQueue->pop();
-						//LeaveCriticalSection(&m_lock);
-					}
-					//DeleteCriticalSection(&m_lock);
-				}
-			return 0;
-		};
-		temp = lambda;
-		auto p = *temp.target<int( void *opaque, uint8_t *buf, int buf_size)>();*/
 		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, this, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return;
 
-		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, &outVideoBuffer, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
+		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, fp_write, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
 			goto end;
 		/*
@@ -198,19 +245,18 @@ namespace Mona
 			av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 			goto end;
 		}
-
 		if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {										//该函数可以读取一部分视音频数据并且获得一些相关的信息
 			av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
 			goto end;
 		}
 		av_dump_format(ifmt_ctx, 0, NULL, false);
-		printf("***nb_stream%d \n", ifmt_ctx->nb_streams);
+		//printf("***nb_stream%d \n", ifmt_ctx->nb_streams);
 		for (i = 0; i < ifmt_ctx->nb_streams; i++) {       //nb_streams为流的数目
 			AVStream *stream;
 			AVCodecContext *codec_ctx;
 			stream = ifmt_ctx->streams[i];
 			codec_ctx = stream->codec;                    //codec为指向该视频/音频流的AVCodecContext
-			INFO("nb_stream:", i)
+			//INFO("nb_stream:", i)
 				//Reencode video & audio and remux subtitles etc. */
 				if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //编解码器的类型（视频，音频）  
 					printf("video stream\n");
@@ -244,10 +290,10 @@ namespace Mona
 			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-				enc_ctx->height = 720;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 404;
-				enc_ctx->sample_aspect_ratio.num = 16;
-				enc_ctx->sample_aspect_ratio.num = 9;
+				enc_ctx->height = 360;        //如果是视频的话，代表宽和高
+				enc_ctx->width = 480;
+				enc_ctx->sample_aspect_ratio.num = 4;
+				enc_ctx->sample_aspect_ratio.num = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
@@ -384,7 +430,15 @@ namespace Mona
 
 			av_free_packet(&packet);
 		}
-
+		/* flush encoders */
+		for (i = 0; i < 1; i++) {
+			/* flush encoder */
+			ret = flush_encoder(ofmt_ctx, i);
+			if (ret < 0) {
+				av_log(NULL, AV_LOG_ERROR, "Flushing encoder failed\n");
+				goto end;
+			}
+		}
 
 		av_write_trailer(ofmt_ctx);   //写文件尾
 	end:
@@ -416,7 +470,7 @@ namespace Mona
 		if (avio_in == NULL)
 			return 0;
 
-		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, &outVideoBuffer, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
+		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, fp_write, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
 			goto end;
 		/*
@@ -477,8 +531,8 @@ namespace Mona
 			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-				enc_ctx->height = 720;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 540;
+				enc_ctx->height = 360;        //如果是视频的话，代表宽和高
+				enc_ctx->width = 480;
 				enc_ctx->sample_aspect_ratio.num = 4;
 				enc_ctx->sample_aspect_ratio.den = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
@@ -636,63 +690,6 @@ namespace Mona
 		return &outVideoBuffer;
 	}
 
-	void Transcode::build_flv_message(char* tagHeader, char* tagEnd, int size, Mona::UInt32 &timeStamp)
-	{
-		int dataSize = size;			 //视频数据长度
-		int endSize = dataSize + 11;		//前一个Tag的长度
-
-		unsigned char * p_dataSize = (unsigned char*)&dataSize;
-
-		for (int i = 0; i < 3; i++)
-		{
-			tagHeader[3 - i] = *(p_dataSize + i);
-		}
-
-		unsigned char * p_timeStamp = (unsigned char *)&timeStamp;
-		for (int i = 0; i < 3; i++)
-		{
-			tagHeader[6 - i] = *(p_timeStamp + i);
-		}
-
-		unsigned char * p_endSize = (unsigned char*)&endSize;
-
-		for (int i = 0; i < 4; i++)
-		{
-			tagEnd[3 - i] = *(p_endSize + i);
-		}
-	}
-
-	int Transcode::pushVideoPacket(BinaryReader& videoPacket)
-	{
-		if ((&videoPacket) != NULL)
-		{
-			videoQueue.push(videoPacket);
-			return 1;
-		}
-		else
-		{
-			ERROR("videoPacket is point to NULL")
-			return 0;
-		}
-		
-	}
-
-	int Transcode::getVideoPacket(int& flag,uint8_t* buf, int& buf_size)
-	{
-		if (!videoQueue.empty())
-		{
-			
-			BinaryReader videoPacket = videoQueue.front();
-			buf_size = FFMIN(buf_size,videoPacket.available());
-			memcpy(buf, videoPacket.current(), buf_size);
-			videoPacket.moveCurrent(buf_size);
-
-			return 1;
-		} else
-		{
-			INFO("videoQueue is empty")
-			return 0;
-		}
-	}
+	
 
 }  //namespace FFMPEG

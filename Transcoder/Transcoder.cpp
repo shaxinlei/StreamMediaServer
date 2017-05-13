@@ -101,15 +101,15 @@ int main(int argc, char* argv[])
 	AVCodecContext *dec_ctx, *enc_ctx;
 	AVCodec *encoder;                 //AVCodec是存储编解码器信息的结构体，enconder存储编码信息的结构体
 
-	fp_open = fopen("test.mkv", "rb");	//打开视频源文件    文件类型 打开 二进制，只读
-	fp_write=fopen("test.264","wb+"); //打开输出文件     文件类型 创建 二进制，读写
+	fp_open = fopen("cuc60anniversary_start.ts", "rb");	//打开视频源文件    文件类型 打开 二进制，只读
+	fp_write=fopen("cuc60anniversary_start.flv","wb+"); //打开输出文件     文件类型 创建 二进制，读写
 
 	av_register_all();					//注册所有编解码器，复用器和解复用器
 
 	/******************shart初始化输入和输出的AVFormatContext***********************/
 
 	ifmt_ctx=avformat_alloc_context();             //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-	avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);				//初始化AVFormatContext结构体
+	avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", NULL);				//初始化AVFormatContext结构体
 	
 
 	/******************初始化输入和输出的AVFormatContext  end***********************/
@@ -142,10 +142,12 @@ int main(int argc, char* argv[])
 		av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 		return ret;
 	}
+	av_dump_format(ifmt_ctx, 0, "whatever", 0);
 	if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {					//该函数可以读取一部分视音频数据并且获得一些相关的信息
 		av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
 		return ret;
 	}
+	av_dump_format(ifmt_ctx, 0, "whatever", 0);
 	printf("***nb_stream%d \n", ifmt_ctx->nb_streams);
 	for (i = 0; i < ifmt_ctx->nb_streams; i++) {       //nb_streams为流的数目
 		AVStream *stream;
@@ -185,8 +187,9 @@ int main(int argc, char* argv[])
 		if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 		{
 			encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-			enc_ctx->height = 720;        //如果是视频的话，代表宽和高
-			enc_ctx->width = 540;
+			enc_ctx->height = 360;        //如果是视频的话，代表宽和高
+			enc_ctx->width = 480;
+			//enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;
 			enc_ctx->sample_aspect_ratio.num = 4;
 			enc_ctx->sample_aspect_ratio.num = 3;
 

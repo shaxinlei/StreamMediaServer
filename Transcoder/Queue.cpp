@@ -1,8 +1,4 @@
-/* LoopQue.h
-Author: ZhangTao
-Date: July 26, 2009
-*/
-
+/*
 # ifndef LoopQue_h  
 # define LoopQue_h  
 
@@ -103,4 +99,4 @@ namespace Transcode   {
 
 } //namespace Transcode
 
-# endif  // end of <ifndef LoopQue_h>  
+# endif  // end of <ifndef LoopQue_h>  */

@@ -66,3 +66,6 @@ ipch/simplest_ffmpeg_mem_transcoder-a0d6c8c9/simplest_ffmpeg_mem_transcoder-134f
 
 Transcoder/test.h264
 Transcoder/test.mkv
+MonaServer/test.flv
+Transcoder/cuc60anniversary_start.flv
+Transcoder/test.264
