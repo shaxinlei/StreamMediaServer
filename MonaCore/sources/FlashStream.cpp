@@ -20,7 +20,7 @@ This file is a part of Mona.
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
 #include "Mona/MediaCodec.h"
-#define VIDEO_BUFFER_SIZE     32768*320
+#define VIDEO_BUFFER_SIZE     32768*32*10
 #define NEED_TRANSCODE		1
 
 using namespace std;
@@ -282,7 +282,7 @@ void FlashStream::audioHandler(UInt32 time,PacketReader& packet, double lostRate
 	_pPublication->pushAudio(time,packet,peer.ping(),lostRate);
 	//NOTE("receiveAudio");
 }
-/*void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate) {
+void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate) {
 	if (!_pPublication) {
 		WARN("a video packet has been received on a no publishing stream ", id, ", certainly a publication currently closing");
 		return;
@@ -326,8 +326,8 @@ void FlashStream::audioHandler(UInt32 time,PacketReader& packet, double lostRate
 		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
 
 	}
-}*/
-void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate)
+}
+/*void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate)
 	{
 		if (!_pPublication) {
 			WARN("a video packet has been received on a no publishing stream ", id, ", certainly a publication currently closing");
@@ -364,6 +364,6 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 			video_buffer.clear();               //«Â¿Ì ”∆µª∫¥Ê
 		}
 	
-	}
+	}*/
 
 } // namespace Mona

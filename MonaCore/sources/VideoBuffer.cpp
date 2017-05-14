@@ -11,11 +11,11 @@ namespace Mona
 
 	BinaryReader& VideoBuffer::front()
 	{
-		std::unique_lock<std::mutex> lk(mut);
+	/*	std::unique_lock<std::mutex> lk(mut);
 		data_cond.wait(lk, [&]()
 		{
 			return !videoQueue.empty();
-		});
+		});*/
 		return videoQueue.front();
 	}
 

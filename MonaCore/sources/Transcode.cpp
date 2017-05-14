@@ -28,31 +28,11 @@ namespace Mona
 		enc_ctx = NULL;
 		encoder = NULL;
 
-		 //打开输出文件     文件类型 创建 二进制，读写
-
 		av_register_all();											//注册所有编解码器，复用器和解复用器
 		ifmt_ctx = avformat_alloc_context();					    //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
 		avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);
 	}
 	Transcode::~Transcode(){}
-
-	
-	int read_buffer1(void *opaque, uint8_t *buf, int buf_size)
-	{
-	//int ret = -1;
-	if (opaque != NULL)
-	{
-	Mona::PacketReader *videoPacket = (Mona::PacketReader *) opaque;
-	buf_size = FFMIN(buf_size, videoPacket->available());
-
-	av_log(NULL,AV_LOG_INFO," read buf_size:%i\n",buf_size);
-	memcpy(buf, videoPacket->current(), buf_size);
-	videoPacket->moveCurrent(buf_size);
-	return buf_size;
-	}
-	return -1;
-	}
-	
 
 	/*int Transcode::startTranscodeThread()
 	{
@@ -67,6 +47,21 @@ namespace Mona
 		_publication = publication;
 	}
 
+	int read_buffer1(void *opaque, uint8_t *buf, int buf_size)
+	{
+		//int ret = -1;
+		if (opaque != NULL)
+		{
+			Mona::PacketReader *videoPacket = (Mona::PacketReader *) opaque;
+			buf_size = FFMIN(buf_size, videoPacket->available());
+
+			av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", buf_size);
+			memcpy(buf, videoPacket->current(), buf_size);
+			videoPacket->moveCurrent(buf_size);
+			return buf_size;
+		}
+		return -1;
+	}
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
@@ -224,6 +219,7 @@ namespace Mona
 		int i = 0;
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
+		fopen_s(&fp_write, "test.h264", "wb+");
 		inbuffer = (unsigned char*)av_malloc(BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
 		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, this, read_buffer, NULL, NULL);
