@@ -31,7 +31,7 @@ namespace Mona
 		 //打开输出文件     文件类型 创建 二进制，读写
 
 		av_register_all();											//注册所有编解码器，复用器和解复用器
-		ifmt_ctx = avformat_alloc_context();					   //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
+		ifmt_ctx = avformat_alloc_context();					    //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
 		avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);
 	}
 	Transcode::~Transcode(){}
@@ -159,6 +159,7 @@ namespace Mona
 			videoPacket.moveCurrent(buf_size);
 			if (videoPacket.available() == 0)
 			{
+				delete videoPacket.data();
 				videoQueue.pop();
 			}
 			INFO("read_buffer size:", buf_size)
@@ -219,7 +220,6 @@ namespace Mona
 
 	void Transcode::run(Exception& ex)
 	{
-		
 		int ret = 0;
 		int i = 0;
 		unsigned int stream_index;
@@ -233,6 +233,7 @@ namespace Mona
 		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, fp_write, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
 			goto end;
+
 		/*
 		*原本的输入AVFormatContext的指针pb（AVIOContext类型）
 		*指向这个自行初始化的输入AVIOContext结构体。
@@ -457,7 +458,7 @@ namespace Mona
 	}
 
 
-	Mona::Buffer * Transcode::decode(Mona::PacketReader &videoPacket)
+	Buffer * Transcode::decode(BinaryReader &videoPacket)
 	{
 		fopen_s(&fp_write,"test.h264", "wb+");
 		int ret = 0;
@@ -474,12 +475,13 @@ namespace Mona
 		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, fp_write, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
 			goto end;
+
 		/*
 		*原本的输入AVFormatContext的指针pb（AVIOContext类型）
 		*指向这个自行初始化的输入AVIOContext结构体。
 		*/
 
-		ifmt_ctx->pb = avio_in;     //important
+		ifmt_ctx->pb = avio_in;				//important
 
 		ifmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;															 //通过标志位说明采用自定义AVIOContext
 		if ((ret = avformat_open_input(&ifmt_ctx, "what", NULL, NULL)) < 0) {							//打开多媒体数据并且获得一些相关的信息，函数执行成功的话，其返回值大于等于0
@@ -673,7 +675,15 @@ namespace Mona
 			av_free_packet(&packet);
 		}
 
-
+		/* flush encoders */
+		for (i = 0; i < 1; i++) {
+			/* flush encoder */
+			ret = flush_encoder(ofmt_ctx, i);
+			if (ret < 0) {
+				av_log(NULL, AV_LOG_ERROR, "Flushing encoder failed\n");
+				goto end;
+			}
+		}
 		av_write_trailer(ofmt_ctx);   //写文件尾
 	end:
 		av_freep(avio_in);			//释放结构体

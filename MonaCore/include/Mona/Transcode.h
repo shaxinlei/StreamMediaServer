@@ -37,7 +37,7 @@ namespace  Mona
 		friend int write_buffer(void *opaque, uint8_t *buf, int buf_size);
 		friend int read_buffer1(void *opaque, uint8_t *buf, int buf_size);
 		//int decode(int size,const uint8_t *buf);
-		Buffer * decode(PacketReader &videoPacket);     //½âÂë
+		Buffer * decode(BinaryReader &videoPacket);     //½âÂë
 
 		static void build_flv_message(char *tagHeader, char *tagEnd, int size, UInt32 &timeStamp);
 

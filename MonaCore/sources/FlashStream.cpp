@@ -20,7 +20,7 @@ This file is a part of Mona.
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
 #include "Mona/MediaCodec.h"
-#define VIDEO_BUFFER_SIZE     32768*30
+#define VIDEO_BUFFER_SIZE     32768*320
 #define NEED_TRANSCODE		1
 
 using namespace std;
@@ -317,17 +317,15 @@ void FlashStream::audioHandler(UInt32 time,PacketReader& packet, double lostRate
 			running = transcodeThread.start(exWarn);                                      //此处启动转码线程
 			DEBUG("start transcode thread")
 			transcodeThread.setPublication(_pPublication);
-			DEBUG("send publication parameter to transcode thread")
+			DEBUG("send publication parameter to transcode thread")						  
 		}
 	}
 	else
 	{
-		//INFO("video packet's size",packet.size())
 		INFO("receve packet size:", packet.size())
-			_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
+		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
 
 	}
-
 }*/
 void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate)
 	{
@@ -355,7 +353,7 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 		
 		if (video_buffer.size()>VIDEO_BUFFER_SIZE)
 		{
-			PacketReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
+			BinaryReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
 			INFO("The size of VideoPacket:", videoPacket.size());
 
 			Buffer *transcodedVideoBuffer = transcodeThread.decode(videoPacket);
