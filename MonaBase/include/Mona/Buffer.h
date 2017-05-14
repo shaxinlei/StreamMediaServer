@@ -63,6 +63,7 @@ private:
 	UInt32	_size;
 	UInt32	_capacity;
 	UInt8*	_buffer;
+	
 };
 
 
