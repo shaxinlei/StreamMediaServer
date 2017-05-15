@@ -34,14 +34,6 @@ namespace Mona
 	}
 	Transcode::~Transcode(){}
 
-	/*int Transcode::startTranscodeThread()
-	{
-		transcode_thread.reset(new thread(std::bind(&Transcode::transcode, this)));
-		DEBUG("detach child thread")
-		transcode_thread->detach();
-		return 1;
-	}*/
-
 	void Transcode::setPublication(Publication* publication)
 	{
 		_publication = publication;
@@ -65,29 +57,11 @@ namespace Mona
 
 	int read_buffer(void *opaque, uint8_t *buf, int buf_size)
 	{
-		DEBUG("Enter read_buffer method")
 		int flag = ((Transcode *)opaque)->flag;
-		int ret = 1;
-		if (ret && !((Transcode *)opaque)->videoQueue.empty())
-		{
-			ret = ((Transcode *)opaque)->getVideoPacket(flag, buf, buf_size);
-			return ret;
-		}
-		return -1;
+		int tureSize = 0;
+		tureSize = ((Transcode *)opaque)->getVideoPacket(flag, buf, buf_size);
+		return tureSize;
 	}
-
-
-	/*int write_buffer(void *opaque, uint8_t *buf, int buf_size){
-		if (opaque != NULL)
-		{
-			Mona::Buffer *outBuffer = (Mona::Buffer *) opaque;
-
-			av_log(NULL, AV_LOG_INFO, " write buf_size:%i\n", buf_size);
-			outBuffer->append(buf, buf_size);
-			return buf_size;
-		}
-		return -1;
-	}*/
 
 	//Write File  回调函数
 	int write_buffer(void *opaque, uint8_t *buf, int buf_size){
@@ -145,26 +119,13 @@ namespace Mona
 
 	int Transcode::getVideoPacket(int& flag, uint8_t* buf, int& buf_size)
 	{
-		if (!videoQueue.empty())
-		{
-			BinaryReader videoPacket = videoQueue.front();
-
-			buf_size = FFMIN(buf_size, videoPacket.available());
-			memcpy(buf, videoPacket.current(), buf_size);
-			videoPacket.moveCurrent(buf_size);
-			if (videoPacket.available() == 0)
-			{
-				delete videoPacket.data();
-				videoQueue.pop();
-			}
-			INFO("read_buffer size:", buf_size)
-				return buf_size;
-		}
-		else
-		{
-			INFO("videoQueue is empty")
-				return 0;
-		}
+		BinaryReader videoPacket;
+		videoQueue.wait_and_pop(videoPacket);
+		buf_size = FFMIN(buf_size, videoPacket.available());
+		memcpy(buf, videoPacket.current(), buf_size);
+		videoPacket.moveCurrent(buf_size);
+		delete videoPacket.data();
+		return buf_size;
 	}
 
 	int Transcode::flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index)
@@ -291,7 +252,7 @@ namespace Mona
 				enc_ctx->width = 480;
 				enc_ctx->sample_aspect_ratio.num = 4;
 				enc_ctx->sample_aspect_ratio.num = 3;
-				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
+				//enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
 				//enc_ctx->time_base.num = 1;
@@ -534,7 +495,7 @@ namespace Mona
 				enc_ctx->width = 480;
 				enc_ctx->sample_aspect_ratio.num = 4;
 				enc_ctx->sample_aspect_ratio.den = 3;
-				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
+				//enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
 				//enc_ctx->time_base.num = 1;

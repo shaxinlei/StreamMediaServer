@@ -27,7 +27,7 @@ namespace Mona {
 
 class BinaryReader : public Binary, virtual public Object {
 public:
-	BinaryReader();
+	BinaryReader(){};
     BinaryReader(const UInt8* data,UInt32 size,Binary::Order byteOrder=Binary::ORDER_NETWORK);
 
 	

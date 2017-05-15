@@ -3,6 +3,7 @@
 #include <condition_variable>
 
 #include  "Mona/BinaryReader.h"
+#include <memory>
 
 namespace Mona
 {
@@ -24,6 +25,8 @@ namespace Mona
 		bool full();
 
 		int getBufferSize();				//获取队列中视频数据的大小
+
+		void wait_and_pop(BinaryReader& value);
 
 	private:
 		std::queue<BinaryReader> videoQueue;           //存放flv video tag的队列
