@@ -60,6 +60,7 @@ namespace Mona
 		int flag = ((Transcode *)opaque)->flag;
 		int tureSize = 0;
 		tureSize = ((Transcode *)opaque)->getVideoPacket(flag, buf, buf_size);
+		av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", tureSize);
 		return tureSize;
 	}
 
@@ -123,6 +124,7 @@ namespace Mona
 		videoQueue.wait_and_pop(videoPacket);
 		buf_size = FFMIN(buf_size, videoPacket.available());
 		memcpy(buf, videoPacket.current(), buf_size);
+		//av_log(NULL, AV_LOG_INFO, " getVideoPacket:%i\n", buf_size);
 		videoPacket.moveCurrent(buf_size);
 		delete videoPacket.data();
 		return buf_size;
@@ -203,7 +205,10 @@ namespace Mona
 			av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 			goto end;
 		}
-		if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {										//该函数可以读取一部分视音频数据并且获得一些相关的信息
+		AVDictionary* pOptions = NULL;
+		ifmt_ctx->probesize = 32 * 1024;
+		ifmt_ctx->max_analyze_duration = 5 * AV_TIME_BASE;
+		if ((ret = avformat_find_stream_info(ifmt_ctx, &pOptions)) < 0) {										//该函数可以读取一部分视音频数据并且获得一些相关的信息
 			av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
 			goto end;
 		}

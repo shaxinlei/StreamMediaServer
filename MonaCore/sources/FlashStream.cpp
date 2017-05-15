@@ -20,7 +20,7 @@ This file is a part of Mona.
 #include "Mona/FlashStream.h"
 #include "Mona/Logs.h"
 #include "Mona/MediaCodec.h"
-#define VIDEO_BUFFER_SIZE     32768*50
+#define VIDEO_BUFFER_SIZE     32768*5
 #define NEED_TRANSCODE		1
 
 using namespace std;
