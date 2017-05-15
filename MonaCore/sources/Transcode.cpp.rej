@@ -1,0 +1,10 @@
+diff a/MonaCore/sources/Transcode.cpp b/MonaCore/sources/Transcode.cpp	(rejected hunks)
+@@ -259,7 +259,7 @@
+ 				enc_ctx->width = 480;
+ 				enc_ctx->sample_aspect_ratio.num = 4;
+ 				enc_ctx->sample_aspect_ratio.num = 3;
+-				//enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //��߱�
++				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //��߱�
+ 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //���ظ�ʽ
+ 				enc_ctx->time_base = dec_ctx->time_base;      //֡ʱ����Ļ���ʱ�䵥λ������Ϊ��λ��
+ 				//enc_ctx->time_base.num = 1;
