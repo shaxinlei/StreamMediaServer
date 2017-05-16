@@ -309,7 +309,7 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 		video_buffer->append(packet.current(), packet.size());							  //add video data
 		video_buffer->append(tagEnd, 4);
 		BinaryReader videoPacket(video_buffer->data(), video_buffer->size());
-		//DEBUG("push video packet to videoQueue:", videoPacket.size())
+		DEBUG("push video packet to videoQueue:", videoPacket.size())
 		transcodeThread.pushVideoPacket(videoPacket);
 		if (!running)
 		{
@@ -322,7 +322,7 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 	}
 	else
 	{
-		INFO("receve packet size:", packet.size())
+		//INFO("receve packet size:", packet.size())
 		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
 
 	}

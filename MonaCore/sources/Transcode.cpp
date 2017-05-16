@@ -4,6 +4,7 @@
 
 #include "Mona/Transcode.h"
 #include "Mona/Logs.h"
+#define READ_BUF_SIZE 32768*2
 #define BUF_SIZE 32768
 using namespace std;
 
@@ -183,9 +184,9 @@ namespace Mona
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
 		fopen_s(&fp_write, "test.h264", "wb+");
-		inbuffer = (unsigned char*)av_malloc(BUF_SIZE);            //为输入缓冲区间分配内存
+		inbuffer = (unsigned char*)av_malloc(READ_BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
-		avio_in = avio_alloc_context(inbuffer, BUF_SIZE, 0, this, read_buffer, NULL, NULL);
+		avio_in = avio_alloc_context(inbuffer, READ_BUF_SIZE, 0, this, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return;
 
@@ -254,10 +255,12 @@ namespace Mona
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
 				enc_ctx->height = 360;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 480;
-				enc_ctx->sample_aspect_ratio.num = 4;
-				enc_ctx->sample_aspect_ratio.num = 3;
-				//enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
+				enc_ctx->width = 640;
+				enc_ctx->height = 360;        //如果是视频的话，代表宽和高
+				enc_ctx->width = 640;
+				//enc_ctx->sample_aspect_ratio.num = 4;
+				//enc_ctx->sample_aspect_ratio.num = 3;
+				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
 				//enc_ctx->time_base.num = 1;
