@@ -254,10 +254,8 @@ namespace Mona
 			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-				enc_ctx->height = 360;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 640;
-				enc_ctx->height = 360;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 640;
+				enc_ctx->height = 120;        //如果是视频的话，代表宽和高
+				enc_ctx->width = 160;
 				//enc_ctx->sample_aspect_ratio.num = 4;
 				//enc_ctx->sample_aspect_ratio.num = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
