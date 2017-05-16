@@ -31,7 +31,7 @@ namespace Mona
 
 		av_register_all();											//注册所有编解码器，复用器和解复用器
 		ifmt_ctx = avformat_alloc_context();					    //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-		
+		//avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);
 	}
 	Transcode::~Transcode(){}
 
@@ -193,7 +193,7 @@ namespace Mona
 		if (avio_in == NULL)
 			return;
 
-		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, NULL, NULL, NULL, NULL);  //初始化输出AVIOContext结构体
+		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, fp_write, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
 			goto end;
 
