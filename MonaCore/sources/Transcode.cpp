@@ -4,7 +4,7 @@
 
 #include "Mona/Transcode.h"
 #include "Mona/Logs.h"
-#define READ_BUF_SIZE 32768*2
+#define READ_BUF_SIZE 32768*4
 #define BUF_SIZE 32768
 using namespace std;
 
@@ -31,7 +31,7 @@ namespace Mona
 
 		av_register_all();											//注册所有编解码器，复用器和解复用器
 		ifmt_ctx = avformat_alloc_context();					    //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-		avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);
+		
 	}
 	Transcode::~Transcode(){}
 
@@ -184,13 +184,16 @@ namespace Mona
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
 		fopen_s(&fp_write, "test.h264", "wb+");
+		char out_filename[500] = "rtmp://60.205.186.144:1935/live/livestream";
+		//char out_filename[500] = "rtmp://192.168.43.143:1935/live/livestream";
+		avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", out_filename);
 		inbuffer = (unsigned char*)av_malloc(READ_BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
 		avio_in = avio_alloc_context(inbuffer, READ_BUF_SIZE, 0, this, read_buffer, NULL, NULL);
 		if (avio_in == NULL)
 			return;
 
-		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, fp_write, NULL, write_buffer, NULL);  //初始化输出AVIOContext结构体
+		avio_out = avio_alloc_context(outbuffer, BUF_SIZE, 0, NULL, NULL, NULL, NULL);  //初始化输出AVIOContext结构体
 		if (avio_out == NULL)
 			goto end;
 
@@ -207,7 +210,7 @@ namespace Mona
 			goto end;
 		}
 		AVDictionary* pOptions = NULL;
-		ifmt_ctx->probesize = 32 * 1024;
+		ifmt_ctx->probesize = 64 * 1024;
 		ifmt_ctx->max_analyze_duration = 5 * AV_TIME_BASE;
 		if ((ret = avformat_find_stream_info(ifmt_ctx, &pOptions)) < 0) {										//该函数可以读取一部分视音频数据并且获得一些相关的信息
 			av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
@@ -240,8 +243,8 @@ namespace Mona
 		//avio_out->write_packet=write_packet;
 
 		//原本的输出AVFormatContext的指针pb（AVIOContext类型）指向这个自行初始化的输出AVIOContext结构体
-		ofmt_ctx->pb = avio_out;
-		ofmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;
+		//ofmt_ctx->pb = avio_out;
+		//ofmt_ctx->flags = AVFMT_FLAG_CUSTOM_IO;
 		for (i = 0; i < 1; i++) {
 			out_stream = avformat_new_stream(ofmt_ctx, NULL);              //初始化AVStream结构体（分配内存，设置默认值），并返回这个这个结构体
 			if (!out_stream) {
@@ -254,8 +257,10 @@ namespace Mona
 			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-				enc_ctx->height = 120;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 160;
+				//enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
+				//enc_ctx->width = dec_ctx -> width;
+				enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
+				enc_ctx->width = dec_ctx -> width;
 				//enc_ctx->sample_aspect_ratio.num = 4;
 				//enc_ctx->sample_aspect_ratio.num = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
@@ -293,6 +298,14 @@ namespace Mona
 			}
 			if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
 				enc_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+		}
+		//打开输出地址（推流地址）
+		if (!(ofmt_ctx->oformat->flags & AVFMT_NOFILE)) {
+			ret = avio_open(&ofmt_ctx->pb, out_filename, AVIO_FLAG_WRITE);
+			if (ret < 0) {
+				printf("无法打开地址 '%s'", out_filename);
+				goto end;
+			}
 		}
 		//av_dump_format(ofmt_ctx, 0, "whatever", 1);
 		/* init muxer, write output file header */
