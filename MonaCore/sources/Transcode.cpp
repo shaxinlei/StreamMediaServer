@@ -48,7 +48,7 @@ namespace Mona
 			Mona::PacketReader *videoPacket = (Mona::PacketReader *) opaque;
 			buf_size = FFMIN(buf_size, videoPacket->available());
 
-			av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", buf_size);
+			//av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", buf_size);
 			memcpy(buf, videoPacket->current(), buf_size);
 			videoPacket->moveCurrent(buf_size);
 			return buf_size;
@@ -61,7 +61,7 @@ namespace Mona
 		int flag = ((Transcode *)opaque)->flag;
 		int tureSize = 0;
 		tureSize = ((Transcode *)opaque)->getVideoPacket(flag, buf, buf_size);
-		av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", tureSize);
+		//av_log(NULL, AV_LOG_INFO, " read buf_size:%i\n", tureSize);
 		return tureSize;
 	}
 
@@ -184,8 +184,9 @@ namespace Mona
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
 		fopen_s(&fp_write, "test.h264", "wb+");
-		char out_filename[500] = "rtmp://60.205.186.144:1935/live/livestream";
+		char out_filename[500] = "rtmp://60.205.186.144:1935/live/livestream1";
 		//char out_filename[500] = "rtmp://192.168.43.143:1935/live/livestream";
+		//char out_filename[500] = "rtmp://127.0.0.1:1937/live/livestream";
 		avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", out_filename);
 		inbuffer = (unsigned char*)av_malloc(READ_BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
@@ -259,8 +260,8 @@ namespace Mona
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
 				//enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
 				//enc_ctx->width = dec_ctx -> width;
-				enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
-				enc_ctx->width = dec_ctx -> width;
+				enc_ctx->height = 240;        //如果是视频的话，代表宽和高
+				enc_ctx->width = 320;
 				//enc_ctx->sample_aspect_ratio.num = 4;
 				//enc_ctx->sample_aspect_ratio.num = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
@@ -348,7 +349,7 @@ namespace Mona
 			//解码一帧视频数据。输入一个压缩编码的结构体AVPacket，输出一个解码后的结构体AVFrame
 			ret = avcodec_decode_video2(ifmt_ctx->streams[stream_index]->codec, frame,
 				&got_frame, &packet);       //如果没有帧可以解压缩，got_frame为零，否则，非零
-			printf("Decode 1 Packet\tsize:%d\tpts:%lld\n", packet.size, packet.pts);
+			//printf("Decode 1 Packet\tsize:%d\tpts:%lld\n", packet.size, packet.pts);
 
 			if (ret < 0) {     //解码一帧视频失败
 				av_frame_free(&frame);
@@ -368,7 +369,7 @@ namespace Mona
 					frame, &enc_got_frame);
 
 
-				printf("Encode 1 Packet\tsize:%d\tpts:%lld\n", enc_pkt.size, enc_pkt.pts);
+				//printf("Encode 1 Packet\tsize:%d\tpts:%lld\n", enc_pkt.size, enc_pkt.pts);
 
 				av_frame_free(&frame);     //释放结构体
 				if (ret < 0)
@@ -395,7 +396,7 @@ namespace Mona
 				enc_pkt.duration = av_rescale_q(enc_pkt.duration,           //数据的时长，以所属媒体流的时间基准为单位
 					ofmt_ctx->streams[stream_index]->codec->time_base,
 					ofmt_ctx->streams[stream_index]->time_base);
-				av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n", i);
+				//av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n", i);
 				/* mux encoded frame */
 				av_write_frame(ofmt_ctx, &enc_pkt);                          //av_write_frame()用于输出一帧视音频数据
 				if (ret < 0)
