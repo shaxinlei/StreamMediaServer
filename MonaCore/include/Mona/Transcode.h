@@ -54,6 +54,8 @@ namespace  Mona
 		int getVideoPacket(int& flag,uint8_t *buf, int& buf_size);
 
 		void setPublication(Publication* publication);
+
+
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
 		unsigned char* inbuffer;       //输入缓冲区间
@@ -81,6 +83,8 @@ namespace  Mona
 		int flag;
 
 		FILE *fp_write;
+
+		int needNetwork;
 	};
 
 	

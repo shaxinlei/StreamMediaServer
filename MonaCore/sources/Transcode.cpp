@@ -10,7 +10,7 @@ using namespace std;
 
 namespace Mona
 {
-	Transcode::Transcode() :Startable("Transcode"), _publication(NULL), flag(0), fp_write(NULL)
+	Transcode::Transcode() :Startable("Transcode"), _publication(NULL), flag(0), fp_write(NULL), needNetwork(0)
 	{
 		avio_in = NULL;
 		avio_out = NULL;
@@ -184,9 +184,9 @@ namespace Mona
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
 		fopen_s(&fp_write, "test.h264", "wb+");
-		char out_filename[500] = "rtmp://60.205.186.144:1935/live/livestream1";
+		//char out_filename[500] = "rtmp://60.205.186.144:1935/live/livestream1";
 		//char out_filename[500] = "rtmp://192.168.43.143:1935/live/livestream";
-		//char out_filename[500] = "rtmp://127.0.0.1:1937/live/livestream";
+		char out_filename[500] = "rtmp://127.0.0.1:1937/live/livestream";
 		avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", out_filename);
 		inbuffer = (unsigned char*)av_malloc(READ_BUF_SIZE);            //为输入缓冲区间分配内存
 		outbuffer = (unsigned char*)av_malloc(BUF_SIZE);
@@ -211,7 +211,7 @@ namespace Mona
 			goto end;
 		}
 		AVDictionary* pOptions = NULL;
-		ifmt_ctx->probesize = 64 * 1024;
+		ifmt_ctx->probesize = 64* 1024;
 		ifmt_ctx->max_analyze_duration = 5 * AV_TIME_BASE;
 		if ((ret = avformat_find_stream_info(ifmt_ctx, &pOptions)) < 0) {										//该函数可以读取一部分视音频数据并且获得一些相关的信息
 			av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
@@ -258,10 +258,10 @@ namespace Mona
 			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-				//enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
-				//enc_ctx->width = dec_ctx -> width;
-				enc_ctx->height = 240;        //如果是视频的话，代表宽和高
-				enc_ctx->width = 320;
+				enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
+				enc_ctx->width = dec_ctx -> width;
+				//enc_ctx->height = 240;        //如果是视频的话，代表宽和高
+				//enc_ctx->width = 320;
 				//enc_ctx->sample_aspect_ratio.num = 4;
 				//enc_ctx->sample_aspect_ratio.num = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
@@ -299,6 +299,11 @@ namespace Mona
 			}
 			if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
 				enc_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+		}
+		needNetwork = 1;
+		if (needNetwork) {
+			//需要播放网络视频
+			avformat_network_init();
 		}
 		//打开输出地址（推流地址）
 		if (!(ofmt_ctx->oformat->flags & AVFMT_NOFILE)) {
