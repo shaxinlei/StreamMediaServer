@@ -17,7 +17,7 @@ FILE *fp_write;
 
 //Read File   回调函数
 int read_buffer(void *opaque, uint8_t *buf, int buf_size){
-	printf("buf_size:%d\n", buf_size);
+	//printf("buf_size:%d\n", buf_size);
 	if(!feof(fp_open)){
 		true_size=fread(buf,1,buf_size,fp_open);             //返回读取的字节数
 		return true_size;
@@ -102,14 +102,14 @@ int main(int argc, char* argv[])
 	AVCodec *encoder;                 //AVCodec是存储编解码器信息的结构体，enconder存储编码信息的结构体
 
 	fp_open = fopen("cuc60anniversary_start.ts", "rb");	//打开视频源文件    文件类型 打开 二进制，只读
-	fp_write=fopen("cuc60anniversary_start.flv","wb+"); //打开输出文件     文件类型 创建 二进制，读写
+	fp_write=fopen("cuc60anniversary_start.h264","wb+"); //打开输出文件     文件类型 创建 二进制，读写
 
 	av_register_all();					//注册所有编解码器，复用器和解复用器
 
 	/******************shart初始化输入和输出的AVFormatContext***********************/
 
 	ifmt_ctx=avformat_alloc_context();             //初始化AVFormatContext结构体，主要给结构体分配内存、设置字段默认值
-	avformat_alloc_output_context2(&ofmt_ctx, NULL, "flv", NULL);				//初始化AVFormatContext结构体
+	avformat_alloc_output_context2(&ofmt_ctx, NULL, "h264", NULL);				//初始化AVFormatContext结构体
 	
 
 	/******************初始化输入和输出的AVFormatContext  end***********************/
@@ -271,7 +271,7 @@ int main(int argc, char* argv[])
 		//解码一帧视频数据。输入一个压缩编码的结构体AVPacket，输出一个解码后的结构体AVFrame
 		ret = avcodec_decode_video2(ifmt_ctx->streams[stream_index]->codec, frame,      
 			&got_frame, &packet);       //如果没有帧可以解压缩，got_frame为零，否则，非零
-		printf("Decode 1 Packet\tsize:%d\tpts:%lld\n",packet.size,packet.pts);
+		//printf("Decode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", packet.size, packet.pts, packet.dts);
 
 		if (ret < 0) {     //解码一帧视频失败
 			av_frame_free(&frame);
@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
 				frame, &enc_got_frame);
 
 
-			printf("Encode 1 Packet\tsize:%d\tpts:%lld\n",enc_pkt.size,enc_pkt.pts);
+			//printf("Encode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", enc_pkt.size, enc_pkt.pts, packet.dts);
 
 			av_frame_free(&frame);     //释放结构体
 			if (ret < 0)
@@ -318,7 +318,7 @@ int main(int argc, char* argv[])
 			enc_pkt.duration = av_rescale_q(enc_pkt.duration,           //数据的时长，以所属媒体流的时间基准为单位
 				ofmt_ctx->streams[stream_index]->codec->time_base,
 				ofmt_ctx->streams[stream_index]->time_base);
-			av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n",i);
+			//av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n",i);
 			/* mux encoded frame */
 			av_write_frame(ofmt_ctx,&enc_pkt);                          //av_write_frame()用于输出一帧视音频数据
 			if (ret < 0)
@@ -341,6 +341,7 @@ int main(int argc, char* argv[])
 	}
 	av_write_trailer(ofmt_ctx);
 end:
+	av_log(NULL, AV_LOG_INFO, "end", i);
 	av_freep(avio_in);			//释放结构体
 	av_freep(avio_out);
 	av_free(inbuffer);

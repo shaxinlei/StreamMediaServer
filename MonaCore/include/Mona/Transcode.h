@@ -39,7 +39,7 @@ namespace  Mona
 		//int decode(int size,const uint8_t *buf);
 		Buffer * decode(BinaryReader &videoPacket);     //½âÂë
 
-		static void build_flv_message(char *tagHeader, char *tagEnd, int size, UInt32 &timeStamp);
+		static void build_flv_message(char *tagHeader, char *tagEnd, int size, UInt32 timeStamp);
 
 		int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index);
 

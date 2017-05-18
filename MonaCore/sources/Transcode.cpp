@@ -78,11 +78,11 @@ namespace Mona
 		}
 	}
 
-	void Transcode::build_flv_message(char* tagHeader, char* tagEnd, int size, Mona::UInt32 &timeStamp)
+	void Transcode::build_flv_message(char* tagHeader, char* tagEnd, int size, Mona::UInt32 timeStamp)
 	{
 		int dataSize = size;			 //视频数据长度
 		int endSize = dataSize + 11;		//前一个Tag的长度
-
+		//INFO("timestamp:", timeStamp)
 		unsigned char * p_dataSize = (unsigned char*)&dataSize;
 
 		for (int i = 0; i < 3; i++)
@@ -224,18 +224,17 @@ namespace Mona
 			AVCodecContext *codec_ctx;
 			stream = ifmt_ctx->streams[i];
 			codec_ctx = stream->codec;                    //codec为指向该视频/音频流的AVCodecContext
-			//INFO("nb_stream:", i)
-				//Reencode video & audio and remux subtitles etc. */
-				if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //编解码器的类型（视频，音频）  
-					printf("video stream\n");
-					/* Open decoder */
-					ret = avcodec_open2(codec_ctx,						//该函数用于初始化一个视音频编解码器的AVCodecContext
-						avcodec_find_decoder(codec_ctx->codec_id), NULL);    //根据解码器的ID查找解码器，找到就返回查找到的解码器
-					if (ret < 0) {
-						av_log(NULL, AV_LOG_ERROR, "Failed to open decoder for stream #%u\n", i);
-						goto end;
-					}
+			//Reencode video & audio and remux subtitles etc. */
+			if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //编解码器的类型（视频，音频）  
+				printf("video stream\n");
+				/* Open decoder */
+				ret = avcodec_open2(codec_ctx,						//该函数用于初始化一个视音频编解码器的AVCodecContext
+					avcodec_find_decoder(codec_ctx->codec_id), NULL);    //根据解码器的ID查找解码器，找到就返回查找到的解码器
+				if (ret < 0) {
+					av_log(NULL, AV_LOG_ERROR, "Failed to open decoder for stream #%u\n", i);
+					goto end;
 				}
+			}
 			if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO)
 				INFO("audio stream:")
 		}
@@ -262,8 +261,6 @@ namespace Mona
 				enc_ctx->width = dec_ctx -> width;
 				//enc_ctx->height = 240;        //如果是视频的话，代表宽和高
 				//enc_ctx->width = 320;
-				//enc_ctx->sample_aspect_ratio.num = 4;
-				//enc_ctx->sample_aspect_ratio.num = 3;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
@@ -354,7 +351,7 @@ namespace Mona
 			//解码一帧视频数据。输入一个压缩编码的结构体AVPacket，输出一个解码后的结构体AVFrame
 			ret = avcodec_decode_video2(ifmt_ctx->streams[stream_index]->codec, frame,
 				&got_frame, &packet);       //如果没有帧可以解压缩，got_frame为零，否则，非零
-			//printf("Decode 1 Packet\tsize:%d\tpts:%lld\n", packet.size, packet.pts);
+			printf("Decode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", packet.size, packet.pts,packet.dts);
 
 			if (ret < 0) {     //解码一帧视频失败
 				av_frame_free(&frame);
@@ -374,7 +371,7 @@ namespace Mona
 					frame, &enc_got_frame);
 
 
-				//printf("Encode 1 Packet\tsize:%d\tpts:%lld\n", enc_pkt.size, enc_pkt.pts);
+				printf("Encode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", enc_pkt.size, enc_pkt.pts,packet.dts);
 
 				av_frame_free(&frame);     //释放结构体
 				if (ret < 0)
@@ -401,7 +398,7 @@ namespace Mona
 				enc_pkt.duration = av_rescale_q(enc_pkt.duration,           //数据的时长，以所属媒体流的时间基准为单位
 					ofmt_ctx->streams[stream_index]->codec->time_base,
 					ofmt_ctx->streams[stream_index]->time_base);
-				//av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n", i);
+				av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n", i);
 				/* mux encoded frame */
 				av_write_frame(ofmt_ctx, &enc_pkt);                          //av_write_frame()用于输出一帧视音频数据
 				if (ret < 0)

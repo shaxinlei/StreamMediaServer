@@ -290,7 +290,7 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 	if (NEED_TRANSCODE)
 	{
 		Buffer *video_buffer = new Buffer();
-
+		//INFO("flashstream timestamp: ",time)
 		char flvHeader[] = { 'F', 'L', 'V', 0x01,
 			0x01,             //0x04代表有音频, 0x01代表有视频 
 			0x00, 0x00, 0x00, 0x09,
