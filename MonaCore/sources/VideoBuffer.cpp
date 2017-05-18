@@ -21,7 +21,10 @@ namespace Mona
 		std::lock_guard<std::mutex> lk(mut);
 		videoQueue.push(videoPacket);
 		bufferSize += videoPacket.size();
-		data_cond.notify_one();
+		if (size() == 1)
+		{
+			data_cond.notify_one();
+		}
 	}
 
 	void VideoBuffer::pop()

@@ -20,6 +20,7 @@ int read_buffer(void *opaque, uint8_t *buf, int buf_size){
 	//printf("buf_size:%d\n", buf_size);
 	if(!feof(fp_open)){
 		true_size=fread(buf,1,buf_size,fp_open);             //返回读取的字节数
+		printf("true_size:%d\n", true_size);
 		return true_size;
 
 	}else{
@@ -271,7 +272,7 @@ int main(int argc, char* argv[])
 		//解码一帧视频数据。输入一个压缩编码的结构体AVPacket，输出一个解码后的结构体AVFrame
 		ret = avcodec_decode_video2(ifmt_ctx->streams[stream_index]->codec, frame,      
 			&got_frame, &packet);       //如果没有帧可以解压缩，got_frame为零，否则，非零
-		//printf("Decode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", packet.size, packet.pts, packet.dts);
+		printf("Decode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", packet.size, packet.pts, packet.dts);
 
 		if (ret < 0) {     //解码一帧视频失败
 			av_frame_free(&frame);
@@ -291,7 +292,7 @@ int main(int argc, char* argv[])
 				frame, &enc_got_frame);
 
 
-			//printf("Encode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", enc_pkt.size, enc_pkt.pts, packet.dts);
+			printf("Encode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", enc_pkt.size, enc_pkt.pts, packet.dts);
 
 			av_frame_free(&frame);     //释放结构体
 			if (ret < 0)
@@ -318,7 +319,7 @@ int main(int argc, char* argv[])
 			enc_pkt.duration = av_rescale_q(enc_pkt.duration,           //数据的时长，以所属媒体流的时间基准为单位
 				ofmt_ctx->streams[stream_index]->codec->time_base,
 				ofmt_ctx->streams[stream_index]->time_base);
-			//av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n",i);
+			av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n",i);
 			/* mux encoded frame */
 			av_write_frame(ofmt_ctx,&enc_pkt);                          //av_write_frame()用于输出一帧视音频数据
 			if (ret < 0)
