@@ -316,8 +316,7 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 			Exception exWarn;
 			running = transcodeThread.start(exWarn);                                      //此处启动转码线程
 			DEBUG("start transcode thread")
-			transcodeThread.setPublication(_pPublication);
-			DEBUG("send publication parameter to transcode thread")						  
+			transcodeThread.setEncodeParamter(320,240,600000);
 		}
 	}
 	else
@@ -327,51 +326,5 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 
 	}
 }
-/*void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate)
-	{
-		if (NEED_TRANSCODE)
-		{
-			if (!_pPublication) {
-				WARN("a video packet has been received on a no publishing stream ", id, ", certainly a publication currently closing");
-				return;
-			}
-			char flvHeader[] = { 'F', 'L', 'V', 0x01,
-				0x01,             // 0x04代表有音频, 0x01代表有视频 
-				0x00, 0x00, 0x00, 0x09,
-				0x00, 0x00, 0x00, 0x00
-			};
-			char tagHeader[] = { 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
-
-			char tagEnd[] = { 0x00, 0x00, 0x00, 0x00 };
-
-			Transcode::build_flv_message(tagHeader, tagEnd, packet.size(), time);			  //组flv头、videoTag 
-
-			if (MediaCodec::H264::IsCodecInfos(packet)) {                                     //if AVCPacketType then add byte flv header and 4byte previoustime
-				video_buffer.append(flvHeader, 13);
-			}
-			video_buffer.append(tagHeader, 11);												  // add 11byte videoTag header
-			video_buffer.append(packet.current(), packet.size());							      //add video data
-			video_buffer.append(tagEnd, 4);
-
-			if (video_buffer.size() > VIDEO_BUFFER_SIZE)
-			{
-				BinaryReader videoPacket(video_buffer.data(), video_buffer.size());          //构建videoPacket
-				INFO("The size of VideoPacket:", videoPacket.size());
-
-				Buffer *transcodedVideoBuffer = transcodeThread.decode(videoPacket);
-				//PacketReader transcodedVideo(transcodedVideoBuffer->data(),transcodedVideoBuffer->size());
-
-				//_pPublication->pushVideo(time, transcodedVideo, peer.ping(), lostRate);
-
-				video_buffer.clear();               //清理视频缓存
-			}
-		}
-		else
-		{
-			INFO("receve packet size:", packet.size())
-			_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
-		}
-	
-	}*/
 
 } // namespace Mona

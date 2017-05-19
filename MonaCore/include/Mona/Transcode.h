@@ -1,16 +1,10 @@
 #pragma once
 
-#include "Mona/PacketReader.h"
 #include "Mona/Startable.h"
 #include "Mona/Invoker.h"
 #include "VideoBuffer.h"
 #include <thread>
 #include <queue>
-
-
-namespace Mona {
-	class FlashStream;
-}
 
 extern "C"
 {
@@ -22,8 +16,6 @@ extern "C"
 #include "libswscale/swscale.h"
 #include "libavutil/imgutils.h"
 };
-
-
 
 namespace  Mona
 {
@@ -37,29 +29,20 @@ namespace  Mona
 		//回调函数 将收到包的buffer拷贝到buf中
 		friend int read_buffer(void *opaque, uint8_t *buf, int buf_size);
 		friend int write_buffer(void *opaque, uint8_t *buf, int buf_size);
-		friend int read_buffer1(void *opaque, uint8_t *buf, int buf_size);
-		//int decode(int size,const uint8_t *buf);
-		Buffer * decode(BinaryReader &videoPacket);     //解码
-
+		
 		static void build_flv_message(char *tagHeader, char *tagEnd, int size, UInt32 timeStamp);
 
 		int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index);
 
 		void run(Exception &ex);
 
-		//void transcode();
-
-		int startTranscodeThread();        //启动转码线程
-
 		int pushVideoPacket(BinaryReader &videoPacket);    //向视频队列压入视频包
 
 		int getVideoPacket(int& flag,uint8_t *buf, int& buf_size);
 
-		void setPublication(Publication* publication);
-
 		void resolutionChange(AVCodecContext *pCodecCtx, AVFrame *pFrame, AVFrame *pNewFrame, int pNewWidth, int pNewHeight);
-		int ScaleImg(AVCodecContext *pCodecCtx, AVFrame *src_picture, AVFrame *dst_picture, int nDstH, int nDstW);
-
+		
+		void setEncodeParamter(int _dst_width, int _dst_height, int _bitRate);
 
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
@@ -92,6 +75,11 @@ namespace  Mona
 		int needNetwork;
 
 		AVFrame* newFrame;
+
+		int dst_width;
+		int dst_height;
+		int bitRate;
+		int my_pts;
 	};
 
 	
