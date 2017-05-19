@@ -6,12 +6,12 @@
 #include "Mona/Logs.h"
 #define READ_BUF_SIZE 32768*4
 #define BUF_SIZE 32768
-#define SAVE_AS_FILE_FLAG 1
+#define SAVE_AS_FILE_FLAG 0
 using namespace std;
 
 namespace Mona
 {
-	Transcode::Transcode() :Startable("Transcode"), _publication(NULL), flag(0), fp_write(NULL), needNetwork(0)
+	Transcode::Transcode() :Startable("Transcode"), _publication(NULL), flag(0), fp_write(NULL), needNetwork(0), newFrame(NULL)
 	{
 		avio_in = NULL;
 		avio_out = NULL;
@@ -178,6 +178,64 @@ namespace Mona
 		return ret;
 	}
 
+	void Transcode::resolutionChange(AVCodecContext *pCodecCtx, AVFrame *pFrame, AVFrame *pNewFrame, int pNewWidth, int pNewHeight)
+	{
+		/*pNewFrame->linesize[0] = pNewWidth;
+		pNewFrame->linesize[1] = pNewWidth / 2;
+		pNewFrame->linesize[2] = pNewWidth / 2;*/
+		int ret = av_image_alloc(pNewFrame->data, pNewFrame->linesize, 320, 240, AV_PIX_FMT_YUV420P, 1);
+		if (ret< 0) {
+			printf("Could not allocate destination image\n");
+			return ;
+		}
+		//用 sws_getContext函数 得到 sws_scale函数 运行的上下文，之后用 sws_scale函数 将图形缩放
+		SwsContext *pSwsCtx = NULL;
+		pSwsCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P, pNewWidth, pNewHeight, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
+		if (pSwsCtx == NULL)
+			return;
+		sws_scale(pSwsCtx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pNewFrame->data, pNewFrame->linesize);
+		sws_freeContext(pSwsCtx);
+	}
+
+	int Transcode::ScaleImg(AVCodecContext *pCodecCtx, AVFrame *src_picture, AVFrame *dst_picture, int nDstH, int nDstW)
+	{
+		int i;
+		int nSrcStride[3];
+		int nDstStride[3];
+		int nSrcH = pCodecCtx->height;
+		int nSrcW = pCodecCtx->width;
+		struct SwsContext* m_pSwsContext;
+
+		uint8_t *pSrcBuff[3] = { src_picture->data[0], src_picture->data[1], src_picture->data[2] };
+
+		nSrcStride[0] = nSrcW;
+		nSrcStride[1] = nSrcW / 2;
+		nSrcStride[2] = nSrcW / 2;
+
+		dst_picture->linesize[0] = nDstW;
+		dst_picture->linesize[1] = nDstW / 2;
+		dst_picture->linesize[2] = nDstW / 2;
+
+		printf("nSrcW%d\n", nSrcW);
+
+		m_pSwsContext = sws_getContext(nSrcW, nSrcH, PIX_FMT_YUV420P,
+			nDstW, nDstH, PIX_FMT_YUV420P,
+			SWS_BICUBIC,
+			NULL, NULL, NULL);
+
+		if (NULL == m_pSwsContext)
+		{
+			printf("ffmpeg get context error!\n");
+			exit(-1);
+		}
+
+		sws_scale(m_pSwsContext, src_picture->data, src_picture->linesize, 0, pCodecCtx->height, dst_picture->data, dst_picture->linesize);
+
+		printf("line0:%d line1:%d line2:%d\n", dst_picture->linesize[0], dst_picture->linesize[1], dst_picture->linesize[2]);
+		sws_freeContext(m_pSwsContext);
+
+		return 1;
+	}
 
 	void Transcode::run(Exception& ex)
 	{
@@ -285,10 +343,10 @@ namespace Mona
 			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
 				encoder = avcodec_find_encoder(AV_CODEC_ID_H264);    //返回AV_CODEC_ID_H264编码器
-				enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
-				enc_ctx->width = dec_ctx -> width;
-				//enc_ctx->height = 240;        //如果是视频的话，代表宽和高
-				//enc_ctx->width = 320;
+				//enc_ctx->height = dec_ctx->height;        //如果是视频的话，代表宽和高
+				//enc_ctx->width = dec_ctx -> width;
+				enc_ctx->height = 120;        //如果是视频的话，代表宽和高
+				enc_ctx->width = 160;
 				enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;     //宽高比
 				enc_ctx->pix_fmt = encoder->pix_fmts[0];      //像素格式
 				enc_ctx->time_base = dec_ctx->time_base;      //帧时间戳的基本时间单位（以秒为单位）
@@ -365,7 +423,7 @@ namespace Mona
 				ifmt_ctx->streams[stream_index]->time_base,
 				ifmt_ctx->streams[stream_index]->codec->time_base,
 				(AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-			//packet.pts = packet.dts + 1;
+			
 			packet.pts = av_rescale_q_rnd(packet.pts,                      //显示时间戳
 				ifmt_ctx->streams[stream_index]->time_base,
 				ifmt_ctx->streams[stream_index]->codec->time_base,
@@ -374,7 +432,7 @@ namespace Mona
 			//解码一帧视频数据。输入一个压缩编码的结构体AVPacket，输出一个解码后的结构体AVFrame
 			ret = avcodec_decode_video2(ifmt_ctx->streams[stream_index]->codec, frame,
 				&got_frame, &packet);       //如果没有帧可以解压缩，got_frame为零，否则，非零
-			//printf("Decode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", packet.size, packet.pts,packet.dts);
+			printf("Decode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", packet.size, packet.pts,packet.dts);
 
 			if (ret < 0) {     //解码一帧视频失败
 				av_frame_free(&frame);
@@ -382,8 +440,25 @@ namespace Mona
 				break;
 			}
 			if (got_frame) {    //帧被解压缩
-				frame->pts = av_frame_get_best_effort_timestamp(frame);    //设置显示时间戳
-				frame->pict_type = AV_PICTURE_TYPE_NONE;      //图片帧类型
+				
+
+				newFrame = av_frame_alloc();
+				if (!newFrame){
+					return;
+				}
+				if (avpicture_alloc((AVPicture *)newFrame, enc_ctx->pix_fmt, enc_ctx->width * 2, enc_ctx->height * 2)<0){
+					printf("dst_picture allocate failed\n");
+					exit(1);
+				}
+
+				if (!ScaleImg(enc_ctx, frame, newFrame, 160, 120))
+				{
+					printf("scale failed");
+					return;
+				}
+
+				newFrame->pts = av_frame_get_best_effort_timestamp(newFrame);    //设置显示时间戳
+				newFrame->pict_type = AV_PICTURE_TYPE_NONE;      //图片帧类型
 
 				enc_pkt.data = NULL;     //指向保存压缩数据的指针，这就是AVPacket实际的数据。
 				enc_pkt.size = 0;
@@ -391,12 +466,13 @@ namespace Mona
 
 				//该函数用于编码一帧视频数据,成功编码一个AVPacket时enc_got_frame设置为1
 				ret = avcodec_encode_video2(ofmt_ctx->streams[stream_index]->codec, &enc_pkt,
-					frame, &enc_got_frame);
+					newFrame, &enc_got_frame);
 
 
-				//printf("Encode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", enc_pkt.size, enc_pkt.pts,packet.dts);
+				printf("Encode 1 Packet\tsize:%d\tpts:%lld\tdts:%lld\n", enc_pkt.size, enc_pkt.pts,packet.dts);
 
 				av_frame_free(&frame);     //释放结构体
+				av_frame_free(&newFrame);
 				if (ret < 0)
 					goto end;
 				/*如果未成功编码一个AVPacket,退出本次循环，
@@ -418,10 +494,11 @@ namespace Mona
 					ofmt_ctx->streams[stream_index]->codec->time_base,
 					ofmt_ctx->streams[stream_index]->time_base,
 					(AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
+				//enc_pkt.pts = enc_pkt.dts + 1;
 				enc_pkt.duration = av_rescale_q(enc_pkt.duration,           //数据的时长，以所属媒体流的时间基准为单位
 					ofmt_ctx->streams[stream_index]->codec->time_base,
 					ofmt_ctx->streams[stream_index]->time_base);
-				//av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n", i);
+				av_log(NULL, AV_LOG_INFO, "Muxing frame %d\n", i);
 				/* mux encoded frame */
 				av_write_frame(ofmt_ctx, &enc_pkt);                          //av_write_frame()用于输出一帧视音频数据
 				if (ret < 0)

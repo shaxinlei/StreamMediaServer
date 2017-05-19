@@ -19,6 +19,8 @@ extern "C"
 #include "libavutil/avutil.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libswscale/swscale.h"
+#include "libavutil/imgutils.h"
 };
 
 
@@ -55,6 +57,9 @@ namespace  Mona
 
 		void setPublication(Publication* publication);
 
+		void resolutionChange(AVCodecContext *pCodecCtx, AVFrame *pFrame, AVFrame *pNewFrame, int pNewWidth, int pNewHeight);
+		int ScaleImg(AVCodecContext *pCodecCtx, AVFrame *src_picture, AVFrame *dst_picture, int nDstH, int nDstW);
+
 
 	private:
 		AVFormatContext* ifmt_ctx;		//AVFormatContext:统领全局的基本结构体。主要用于处理封装格式（FLV/MK/RMVB）
@@ -85,6 +90,8 @@ namespace  Mona
 		FILE *fp_write;
 
 		int needNetwork;
+
+		AVFrame* newFrame;
 	};
 
 	
