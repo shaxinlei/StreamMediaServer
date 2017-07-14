@@ -291,7 +291,6 @@
     <ClInclude Include="include\Mona\FlashWriter.h" />
     <ClInclude Include="include\Mona\XMLRPCReader.h" />
     <ClInclude Include="include\Mona\XMLRPCWriter.h" />
-    <ClInclude Include="include\RTMPTranscode.h" />
     <ClInclude Include="include\VideoBuffer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -310,7 +309,6 @@
     <ClCompile Include="sources\RelayServer.cpp" />
     <ClCompile Include="sources\RTMFP\RTMFPDecoder.cpp" />
     <ClCompile Include="sources\RTMFP\RTMFPSender.cpp" />
-    <ClCompile Include="sources\RTMPTranscode.cpp" />
     <ClCompile Include="sources\RTMP\RTMPSender.cpp" />
     <ClCompile Include="sources\RTSP\RTSP.cpp" />
     <ClCompile Include="sources\RTSP\RTSPPacket.cpp" />

@@ -389,6 +389,23 @@ namespace Mona {
 				continue;
 			_currentEvent = WSAGETSELECTEVENT(msg.lParam);            //用它返回lParam的低字部分（也就是FD_）
 			_sockfd = msg.wParam;                                       //wParam 参数指定在其上面发生了一个网络事件的套接字,返回套接字
+
+			//NOTE("_currentEvent：",_currentEvent);
+
+//			switch(_currentEvent){
+//			case 1:
+//				NOTE("+++++FD_READ");
+//				break;
+//			case 2:
+//				NOTE("+++++FD_WRITE");
+//				break;
+//			case 8:
+//				NOTE("+++++FD_ACCEPT");
+//				break;
+//			default:
+//				NOTE("+++++Other Event：,_currentEvent");
+//			}
+			//NOTE("_sockfd:", _sockfd);
 			if (_currentEvent == FD_WRITE) {
 				_currentEvent = 0;
 				// protected for _sockets access
