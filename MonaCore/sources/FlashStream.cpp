@@ -22,12 +22,13 @@ This file is a part of Mona.
 #include "Mona/MediaCodec.h"
 #define VIDEO_BUFFER_SIZE     32768*5
 #define NEED_TRANSCODE		1
+#define AUDIO_TRANSCODE     1
 
 using namespace std;
 
 namespace Mona {
-
-	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), running(0), queueSize(0),flag(1){
+	
+	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), running(0), queueSize(0), flag(1), firstPacket(1){
 	video_buffer_first = new Buffer();
 	DEBUG("FlashStream ",id," created")
 }
@@ -40,12 +41,13 @@ FlashStream::~FlashStream() {
 
 void FlashStream::disengage(FlashWriter* pWriter) {
 	// Stop the current  job
-	if(_pPublication) {
+	if(_pPublication)
+	{
 		const string& name(_pPublication->name());
-		if(pWriter)
-			pWriter->writeAMFStatus("NetStream.Unpublish.Success",name + " is now unpublished");
-		 // do after writeAMFStatus because can delete the publication, so corrupt name reference
-		invoker.unpublish(peer,name);
+		if (pWriter)
+			pWriter->writeAMFStatus("NetStream.Unpublish.Success", name + " is now unpublished");
+		// do after writeAMFStatus because can delete the publication, so corrupt name reference
+		invoker.unpublish(peer, name);
 		_pPublication = NULL;
 	}
 	if(_pListener) {
@@ -279,8 +281,37 @@ void FlashStream::audioHandler(UInt32 time,PacketReader& packet, double lostRate
 		WARN("an audio packet has been received on a no publishing stream ",id,", certainly a publication currently closing");
 		return;
 	}
-	_pPublication->pushAudio(time,packet,peer.ping(),lostRate);
-	//NOTE("receiveAudio");
+	if (AUDIO_TRANSCODE)
+	{
+		Buffer *audio_buffer = new Buffer();
+
+		char flvHeader[] = { 'F', 'L', 'V', 0x01,
+			0x01,             //0x04代表有音频, 0x01代表有视频 
+			0x00, 0x00, 0x00, 0x09,
+			0x00, 0x00, 0x00, 0x00
+		};
+		char audioTagHeader[] = { 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+
+		char tagEnd[] = { 0x00, 0x00, 0x00, 0x00 };
+
+		Transcode::build_flv_message(audioTagHeader, tagEnd, packet.size(), time);			  //组flv头、audioTag 
+		if (firstPacket == 1)
+		{
+			audio_buffer->append(flvHeader, 13);
+			firstPacket++;
+		}
+
+		audio_buffer->append(audioTagHeader, 11);											  // add 11byte audioTag header
+		audio_buffer->append(packet.current(), packet.size());							  //add audio data
+		audio_buffer->append(tagEnd, 4);
+		BinaryReader audioPacket(audio_buffer->data(), audio_buffer->size());
+		transcode.pushVideoPacket(audioPacket);
+//		DEBUG("push audio packet to audioQueue:", audioPacket.size())
+	}
+	else
+	{
+		_pPublication->pushAudio(time, packet, peer.ping(), lostRate);
+	}
 }
 void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate) {
 	if (!_pPublication) {
@@ -302,21 +333,22 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 
 		Transcode::build_flv_message(tagHeader, tagEnd, packet.size(), time);			  //组flv头、videoTag 
 
-		if (MediaCodec::H264::IsCodecInfos(packet)) {                                     //if AVCPacketType then add byte flv header and 4byte previoustime
+		if (MediaCodec::H264::IsCodecInfos(packet)&&firstPacket==1) {                                     //if AVCPacketType then add byte flv header and 4byte previoustime
 			video_buffer->append(flvHeader, 13);
+			firstPacket++;
 		}
 		video_buffer->append(tagHeader, 11);											  // add 11byte videoTag header
 		video_buffer->append(packet.current(), packet.size());							  //add video data
 		video_buffer->append(tagEnd, 4);
 		BinaryReader videoPacket(video_buffer->data(), video_buffer->size());
-		//DEBUG("push video packet to videoQueue:", videoPacket.size())
-		transcodeThread.pushVideoPacket(videoPacket);
+//		DEBUG("push video packet to videoQueue:", videoPacket.size())
+		transcode.pushVideoPacket(videoPacket);
 		if (!running)
 		{
 			Exception exWarn;
-			running = transcodeThread.start(exWarn);                                      //此处启动转码线程
+			running = transcode.start(exWarn);                                      //此处启动转码线程
 			DEBUG("start transcode thread")
-			transcodeThread.setEncodeParamter(320,240,600000);
+			transcode.setEncodeParamter(320, 240, 600000);
 		}
 	}
 	else
