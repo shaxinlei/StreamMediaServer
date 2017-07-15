@@ -20,7 +20,7 @@ int read_buffer(void *opaque, uint8_t *buf, int buf_size){
 	//printf("buf_size:%d\n", buf_size);
 	if(!feof(fp_open)){
 		true_size=fread(buf,1,buf_size,fp_open);             //返回读取的字节数
-		printf("true_size:%d\n", true_size);
+//		printf("true_size:%d\n", true_size);
 		return true_size;
 
 	}else{
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 		av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 		return ret;
 	}
-	av_dump_format(ifmt_ctx, 0, "whatever", 0);
+	//av_dump_format(ifmt_ctx, 0, "whatever", 0);
 	if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {					//该函数可以读取一部分视音频数据并且获得一些相关的信息
 		av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
 		return ret;
@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 		if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO)
 			printf("audio stream\n");
 	}
-	av_dump_format(ifmt_ctx, 0, "whatever", 0);
+	//av_dump_format(ifmt_ctx, 0, "whatever", 0);
 	//avio_out->write_packet=write_packet;
 
 	//原本的输出AVFormatContext的指针pb（AVIOContext类型）指向这个自行初始化的输出AVIOContext结构体

@@ -187,7 +187,7 @@ namespace Mona
 		int i = 0;
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
-		char out_filename[500] = "_";
+		char out_filename[500] = "rtmp://127.0.0.1:1937/live/livestream";
 		/*如果需要将直播流保存为文件*/
 		if (SAVE_AS_FILE_FLAG)    
 		{
@@ -237,7 +237,7 @@ namespace Mona
 			codec_ctx = stream->codec;                    //codec为指向该视频/音频流的AVCodecContext
 			//Reencode video & audio and remux subtitles etc. */
 			if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //编解码器的类型（视频，音频）  
-				printf("video stream\n");
+				av_log(NULL, AV_LOG_INFO, "stream %d is video stream\n",i);
 				/* Open decoder */
 				ret = avcodec_open2(codec_ctx,						//该函数用于初始化一个视音频编解码器的AVCodecContext
 					avcodec_find_decoder(codec_ctx->codec_id), NULL);    //根据解码器的ID查找解码器，找到就返回查找到的解码器
@@ -247,7 +247,17 @@ namespace Mona
 				}
 			}
 			if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO)
-				INFO("audio stream:")
+			{
+				av_log(NULL, AV_LOG_INFO, "stream %d is audio stream\n", i);
+				/* Open decoder */
+				ret = avcodec_open2(codec_ctx,						//该函数用于初始化一个视音频编解码器的AVCodecContext
+					avcodec_find_decoder(codec_ctx->codec_id), NULL);    //根据解码器的ID查找解码器，找到就返回查找到的解码器
+				if (ret < 0) {
+					av_log(NULL, AV_LOG_ERROR, "Failed to open decoder for stream #%u\n", i);
+					goto end;
+				}
+			}
+				
 		}
 
 		//av_dump_format(ifmt_ctx, 0, "whatever", 0);
