@@ -271,7 +271,6 @@
     <ClInclude Include="include\Mona\Decoder.h" />
     <ClInclude Include="include\Mona\Transcode.h" />
     <ClInclude Include="include\VideoBuffer.h" />
-    <ClInclude Include="include\RTMPTranscode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\Protocols.cpp">
@@ -442,6 +441,5 @@
     </ClCompile>
     <ClCompile Include="sources\Transcode.cpp" />
     <ClCompile Include="sources\VideoBuffer.cpp" />
-    <ClCompile Include="sources\RTMPTranscode.cpp" />
   </ItemGroup>
 </Project>

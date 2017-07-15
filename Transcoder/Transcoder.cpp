@@ -143,12 +143,12 @@ int main(int argc, char* argv[])
 		av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
 		return ret;
 	}
-	
+	av_dump_format(ifmt_ctx, 0, "whatever", 0);
 	if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {					//该函数可以读取一部分视音频数据并且获得一些相关的信息
 		av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
 		return ret;
 	}
-	av_dump_format(ifmt_ctx, 0, "whatever", 0);          //打印出所有参数
+	av_dump_format(ifmt_ctx, 0, "whatever", 0);
 	printf("***nb_stream%d \n", ifmt_ctx->nb_streams);
 	for (i = 0; i < ifmt_ctx->nb_streams; i++) {       //nb_streams为流的数目
 		AVStream *stream;
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
 		codec_ctx = stream->codec;                    //codec为指向该视频/音频流的AVCodecContext
 		printf("nb_stream:%i\n", i);
 		/* Reencode video & audio and remux subtitles etc. */
-		if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //找到视频流  
+		if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO){       //编解码器的类型（视频，音频）  
 			printf("video stream\n");
 			/* Open decoder */
 			ret = avcodec_open2(codec_ctx,						//该函数用于初始化一个视音频编解码器的AVCodecContext
@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
 				return ret;
 			}
 		}
-		if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO)     //找到音频流
+		if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO)
 			printf("audio stream\n");
 	}
 	av_dump_format(ifmt_ctx, 0, "whatever", 0);

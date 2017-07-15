@@ -187,7 +187,7 @@ namespace Mona
 		int i = 0;
 		unsigned int stream_index;
 		int got_frame, enc_got_frame;
-		char out_filename[500] = "rtmp://60.205.186.144:1937/live/livestream";
+		char out_filename[500] = "_";
 		/*如果需要将直播流保存为文件*/
 		if (SAVE_AS_FILE_FLAG)    
 		{
