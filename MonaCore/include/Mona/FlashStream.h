@@ -73,13 +73,12 @@ private:
 	Listener*		_pListener;
 	UInt32			_bufferTime;
 	
-	Transcode transcode;
+	Transcode transcodeThread;
 	Buffer *video_buffer_first;
 	int running;
 	int queueSize;
 	int flag;
 	Buffer video_buffer;
-	int firstPacket;
 	//Transcode::VideoQueue videoQueue;
 };
 

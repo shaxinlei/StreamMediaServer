@@ -1,13 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonaBase", "MonaBase\MonaBase.vcxproj", "{59BC76A9-32CF-4580-8C32-9F12EA4BA22B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonaCore", "MonaCore\MonaCore.vcxproj", "{DB5EA81E-1995-4F9B-A37E-BFB70E564D4B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070} = {421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonaServer", "MonaServer\MonaServer.vcxproj", "{21C16553-20EB-4346-B2A5-2018BA8A8C52}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Transcode", "Transcode\Transcode.vcxproj", "{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}"
+	ProjectSection(ProjectDependencies) = postProject
+		{59BC76A9-32CF-4580-8C32-9F12EA4BA22B} = {59BC76A9-32CF-4580-8C32-9F12EA4BA22B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Transcoder", "Transcoder\simplest_ffmpeg_mem_transcoder.vcxproj", "{D731E66B-33CD-4002-9358-4E012A420089}"
 EndProject
@@ -51,6 +59,14 @@ Global
 		{21C16553-20EB-4346-B2A5-2018BA8A8C52}.release|Win32.Build.0 = release|Win32
 		{21C16553-20EB-4346-B2A5-2018BA8A8C52}.release|x64.ActiveCfg = release|x64
 		{21C16553-20EB-4346-B2A5-2018BA8A8C52}.release|x64.Build.0 = release|x64
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.debug|ARM.ActiveCfg = Debug|Win32
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.debug|Win32.ActiveCfg = Debug|Win32
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.debug|Win32.Build.0 = Debug|Win32
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.debug|x64.ActiveCfg = Debug|Win32
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.release|ARM.ActiveCfg = Release|Win32
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.release|Win32.ActiveCfg = Release|Win32
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.release|Win32.Build.0 = Release|Win32
+		{421F7AD3-E58E-4EE1-A0A3-E1AA4B979070}.release|x64.ActiveCfg = Release|Win32
 		{D731E66B-33CD-4002-9358-4E012A420089}.debug|ARM.ActiveCfg = Debug|Win32
 		{D731E66B-33CD-4002-9358-4E012A420089}.debug|Win32.ActiveCfg = Debug|Win32
 		{D731E66B-33CD-4002-9358-4E012A420089}.debug|Win32.Build.0 = Debug|Win32
