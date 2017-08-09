@@ -109,8 +109,8 @@
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName)d.lib</OutputFile>
-      <AdditionalLibraryDirectories>../External/lib/ffmpeg</AdditionalLibraryDirectories>
-      <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;avdevice.lib;avfilter.lib;postproc.lib;swresample.lib;swscale.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../External/lib/ffmpeg;../Transcode/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;avdevice.lib;avfilter.lib;postproc.lib;swresample.lib;swscale.lib;Transcoded.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -241,7 +241,6 @@
     <ClInclude Include="include\Mona\StringReader.h" />
     <ClInclude Include="include\Mona\StringWriter.h" />
     <ClInclude Include="include\Mona\TCProtocol.h" />
-    <ClInclude Include="include\Mona\Transcode.h" />
     <ClInclude Include="include\Mona\UDProtocol.h" />
     <ClInclude Include="include\Mona\WebSocket\WSDecoder.h" />
     <ClInclude Include="include\Mona\Writer.h" />
@@ -291,7 +290,10 @@
     <ClInclude Include="include\Mona\FlashWriter.h" />
     <ClInclude Include="include\Mona\XMLRPCReader.h" />
     <ClInclude Include="include\Mona\XMLRPCWriter.h" />
+<<<<<<< HEAD
+=======
     <ClInclude Include="include\VideoBuffer.h" />
+>>>>>>> 6f0d979868c0a0987d22e0a1ab4a5e6a9bbd0b94
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\FlashMainStream.cpp" />
@@ -317,8 +319,6 @@
     <ClCompile Include="sources\RTSP\RTSPWriter.cpp" />
     <ClCompile Include="sources\SDP.cpp" />
     <ClCompile Include="sources\Server.cpp" />
-    <ClCompile Include="sources\Transcode.cpp" />
-    <ClCompile Include="sources\VideoBuffer.cpp" />
     <ClCompile Include="sources\WebSocket\WSDecoder.cpp" />
     <ClCompile Include="sources\Writer.cpp" />
     <ClCompile Include="sources\Protocols.cpp" />

@@ -55,7 +55,7 @@ public:
 		CLOSED
 	};
 
-	bool					reliable;
+	bool					reliable;     //表示服务器与客户端间的通信是否可靠的的bool值（默认True）
 
 
 	const QualityOfService&	qos() const { return _qos; }

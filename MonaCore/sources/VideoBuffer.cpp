@@ -1,9 +1,8 @@
 #include "VideoBuffer.h"
-#include "Mona/Logs.h"
+
 
 namespace Mona
 {
-
 	VideoBuffer::VideoBuffer()
 	{
 		bufferSize = 0;

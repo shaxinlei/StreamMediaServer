@@ -25,8 +25,8 @@ This file is a part of Mona.
 #include "Mona/AMFReader.h"
 #include "Mona/FlashWriter.h"
 #include "Mona/Invoker.h"
-#include "Mona/Transcode.h"
-#include <queue>
+#include "TranscodeFF.h"
+#include "TranscodeRTMP.h"
 
 
 
@@ -72,7 +72,13 @@ private:
 	Publication*	_pPublication;
 	Listener*		_pListener;
 	UInt32			_bufferTime;
+
 	
+<<<<<<< HEAD
+	int sameInUrl;
+	int sameTranscodeParameter;
+	int temp;
+=======
 	Transcode transcode;
 	Buffer *video_buffer_first;
 	int running;
@@ -81,6 +87,7 @@ private:
 	Buffer video_buffer;
 	int firstPacket;
 	//Transcode::VideoQueue videoQueue;
+>>>>>>> 6f0d979868c0a0987d22e0a1ab4a5e6a9bbd0b94
 };
 
 

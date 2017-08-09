@@ -15,18 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Queue.h">
+    <ClInclude Include="include\TranscodeFF.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\Trans_video.h">
+    <ClInclude Include="include\TranscodeRTMP.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VideoBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Queue.cpp">
+    <ClCompile Include="sources\TranscodeFF.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Trans_video.cpp">
+    <ClCompile Include="sources\VideoBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

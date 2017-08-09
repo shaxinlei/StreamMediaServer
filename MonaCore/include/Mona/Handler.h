@@ -36,18 +36,18 @@ public:
 	virtual void			onHandshake(const std::string& protocol,const SocketAddress& address,const std::string& path,const Parameters& properties,UInt32 attempts,std::set<SocketAddress>& addresses){}
 	virtual void			onConnection(Exception& ex,Client& client,DataReader& parameters,DataWriter& response){} // Exception::SOFTWARE, Exception::APPLICATION
 	virtual void			onDisconnection(const Client& client){}
-	virtual void			onAddressChanged(const Client& client,const SocketAddress& oldAddress) {}
+	virtual void			onAddressChanged(const Client& client,const SocketAddress& oldAddress) {}     //发生在client.address更改（可能发生在基于UDP的协议，如RTMFP）
 	virtual bool			onMessage(Exception& ex, Client& client, const std::string& name, DataReader& reader, UInt8 responseType) { return false; } // Exception::SOFTWARE, Exception::APPLICATION
 	virtual bool			onFileAccess(Exception& ex, Client& client,Client::FileAccessType type, DataReader& parameters, File& file, DataWriter& properties){return true;}  // Exception::SOFTWARE
 
-	virtual void			onJoinGroup(Client& client,Group& group){}
+	virtual void			onJoinGroup(Client& client,Group& group){}            //当客户端加入p2p组时发生（RTMFP-NetGroup）
 	virtual void			onUnjoinGroup(Client& client,Group& group){}
 
-	virtual bool			onPublish(Exception& ex,const Publication& publication, Client* pClient){return true;}
-	virtual void			onUnpublish(const Publication& publication, Client* pClient){}
+	virtual bool			onPublish(Exception& ex, const Publication& publication, Client* pClient){ return true; }     //happen on Publication starts
+	virtual void			onUnpublish(const Publication& publication, Client* pClient){}   //happen on Publication stops
 
-	virtual bool			onSubscribe(Exception& ex, Client& client,const Listener& listener){return true;}
-	virtual void			onUnsubscribe(Client& client,const Listener& listener){}
+	virtual bool			onSubscribe(Exception& ex, Client& client,const Listener& listener){return true;}   //happen on publication subscription, Listener argument describes this subscription
+	virtual void			onUnsubscribe(Client& client,const Listener& listener){}    // happen on publication unsubscription,
 
 protected:
 	Handler(UInt32 socketBufferSize, UInt16 threads) : Invoker(socketBufferSize, threads) {}

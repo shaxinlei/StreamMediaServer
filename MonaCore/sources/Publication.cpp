@@ -68,7 +68,7 @@ Listener* Publication::addListener(Exception& ex, Client& client,Writer& writer,
 	return NULL;
 }
 
-void Publication::removeListener(Client& client) {
+void Publication::removeListener(Client& client) {              //从map容器中一处clint对应的记录，并停止监听
 	map<Client*,Listener*>::iterator it = _listeners.find(&client);
 	if(it==_listeners.end()) {
 		WARN("Already unsubscribed of publication ",_name);

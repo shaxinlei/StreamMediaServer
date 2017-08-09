@@ -21,23 +21,14 @@ This file is a part of Mona.
 #include "Mona/Logs.h"
 #include "Mona/MediaCodec.h"
 #define VIDEO_BUFFER_SIZE     32768*5
-<<<<<<< HEAD
 #define NEED_TRANSCODE		0
-=======
-#define NEED_TRANSCODE		1
-#define AUDIO_TRANSCODE     1
->>>>>>> 6f0d979868c0a0987d22e0a1ab4a5e6a9bbd0b94
 
 using namespace std;
 
 namespace Mona {
 	
-<<<<<<< HEAD
-	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0),sameInUrl(0),sameTranscodeParameter(0),temp(0){
-=======
-	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), running(0), queueSize(0), flag(1), firstPacket(1){
+	FlashStream::FlashStream(UInt16 id, Invoker& invoker, Peer& peer) : id(id), invoker(invoker), peer(peer), _pPublication(NULL), _pListener(NULL), _bufferTime(0), running(0), queueSize(0), flag(1), firstPacket(1),sameInUrl(0),sameTranscodeParameter(0){
 	video_buffer_first = new Buffer();
->>>>>>> 6f0d979868c0a0987d22e0a1ab4a5e6a9bbd0b94
 	DEBUG("FlashStream ",id," created")
 }
 
@@ -193,13 +184,22 @@ void FlashStream::messageHandler(const string& name, AMFReader& message, FlashWr
 			_pPublication = NULL;
 		} else
 			writer.writeAMFStatus("NetStream.Publish.Start", publication + " is now published");
-		
+
 		if (!sameInUrl&&!sameTranscodeParameter&&publication=="livestream")
 		{
-			TranscodeFF transcode_ff_(1280, 720, 1000000, "rtmp://127.0.0.1:1935/live/livestream", "rtmp://127.0.0.1:1935/live/livestream1");
+			TranscodeFF transcode_ff_(1280, 720, 1000000, "rtmp://127.0.0.1:1937/live/livestream", "rtmp://127.0.0.1:1937/live/livestream1");
 			sameInUrl = sameTranscodeParameter = 1;
 			Exception exWarn;
-			transcode_ff_.start(exWarn);                                      //此处启动转码线程
+			/*transcode_rtmp_.setEncodeParamter(1280, 720, 1000000);
+			transcode_rtmp_.inputFile("rtmp://127.0.0.1:1935/live/livestream");
+			transcode_rtmp_.outputFile("rtmp://127.0.0.1:1935/live/livestream1");
+			running = transcode_rtmp_.start(exWarn);                                      //此处启动转码线程
+			DEBUG("start transcode_rtmp_ thread")*/
+
+		/*	transcode_ff_.setEncodeParamter(1280, 720, 1000000);
+			transcode_ff_.inputFile("rtmp://127.0.0.1:1935/live/livestream");
+			transcode_ff_.outputFile("rtmp://127.0.0.1:1935/live/livestream1");*/
+			running = transcode_ff_.start(exWarn);                                      //此处启动转码线程
 			DEBUG("start transcode_ff_ thread")
 			
 		}
@@ -300,53 +300,15 @@ void FlashStream::audioHandler(UInt32 time,PacketReader& packet, double lostRate
 		WARN("an audio packet has been received on a no publishing stream ",id,", certainly a publication currently closing");
 		return;
 	}
-<<<<<<< HEAD
 	
 	_pPublication->pushAudio(time, packet, peer.ping(), lostRate);
 	
-=======
-	if (AUDIO_TRANSCODE)
-	{
-		Buffer *audio_buffer = new Buffer();
-
-		char flvHeader[] = { 'F', 'L', 'V', 0x01,
-			0x01,             //0x04代表有音频, 0x01代表有视频 
-			0x00, 0x00, 0x00, 0x09,
-			0x00, 0x00, 0x00, 0x00
-		};
-		char audioTagHeader[] = { 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
-
-		char tagEnd[] = { 0x00, 0x00, 0x00, 0x00 };
-
-		Transcode::build_flv_message(audioTagHeader, tagEnd, packet.size(), time);			  //组flv头、audioTag 
-		if (firstPacket == 1)
-		{
-			audio_buffer->append(flvHeader, 13);
-			firstPacket++;
-		}
-
-		audio_buffer->append(audioTagHeader, 11);											  // add 11byte audioTag header
-		audio_buffer->append(packet.current(), packet.size());							  //add audio data
-		audio_buffer->append(tagEnd, 4);
-		BinaryReader audioPacket(audio_buffer->data(), audio_buffer->size());
-		transcode.pushVideoPacket(audioPacket);
-//		DEBUG("push audio packet to audioQueue:", audioPacket.size())
-	}
-	else
-	{
-		_pPublication->pushAudio(time, packet, peer.ping(), lostRate);
-	}
->>>>>>> 6f0d979868c0a0987d22e0a1ab4a5e6a9bbd0b94
 }
 void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRate) {
 	if (!_pPublication) {
 		WARN("a video packet has been received on a no publishing stream ", id, ", certainly a publication currently closing");
 		return;
 	}
-<<<<<<< HEAD
-		
-	_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
-=======
 	if (NEED_TRANSCODE)
 	{
 		Buffer *video_buffer = new Buffer();
@@ -384,8 +346,8 @@ void FlashStream::videoHandler(UInt32 time, PacketReader& packet, double lostRat
 	{
 		//INFO("receve packet size:", packet.size())
 		_pPublication->pushVideo(time, packet, peer.ping(), lostRate);
->>>>>>> 6f0d979868c0a0987d22e0a1ab4a5e6a9bbd0b94
 
+	}
 }
 
 } // namespace Mona

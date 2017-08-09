@@ -3,7 +3,6 @@
 #include <condition_variable>
 
 #include  "Mona/BinaryReader.h"
-#include <memory>
 
 namespace Mona
 {

@@ -43,11 +43,11 @@ public:
 
 	Client() : _pData(NULL) {}
 
-	const SocketAddress			address;
-	const SocketAddress			serverAddress;
+	const SocketAddress			address;         //客户端地址
+	const SocketAddress			serverAddress;   //server地址
 
-	const std::string			protocol;
-	virtual const Parameters&	parameters() const =0;
+	const std::string			protocol;        //客户端协议名称（RTMP、HTTP）
+	virtual const Parameters&	parameters() const =0;		//客户端协议的静态参数、配置
 
 	 // user data (custom data)
 	template <typename DataType>
@@ -58,13 +58,13 @@ public:
 
 	// Alterable in class children Peer
 	
-	const std::string			path;
+	const std::string			path;					//URL连接中使用的路径
 	const std::string			query;
 	
-	const Time					lastReceptionTime;
+	const Time					lastReceptionTime;        //最后数据接收时间
 	
-	virtual UInt16				ping() const = 0;
-	virtual const Parameters&	properties() const =0;
+	virtual UInt16				ping() const = 0;        //客户端ping值
+	virtual const Parameters&	properties() const =0;   //客户端连接的动态属性
 
 
 	virtual Writer&				writer() = 0;
